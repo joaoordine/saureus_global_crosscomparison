@@ -1,5 +1,5 @@
 # Quality control of downloaded genomes -checkM 
-source <path to bin/activate checkM>
+source /temporario2/11217468/miniconda3/bin/activate checkm
 checkm lineage_wf genome_files checkm_output 
 
 ## Output visualization: more easily visualized in the end of the slurm output file (slurm-JOBID) or also in the 'bin_stats_ext.tsv' (contains along with completeness and contamination parameters, other metrics related to the quality of the assembled genome, such as N50, mean contig, etc)
