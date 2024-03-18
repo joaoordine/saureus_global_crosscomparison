@@ -1,0 +1,30 @@
+# Quality control of downloaded genomes -checkM 
+source <path to bin/activate checkM>
+checkm lineage_wf genome_files checkm_output 
+
+## Output visualization: more easily visualized in the end of the slurm output file (slurm-JOBID) or also in the 'bin_stats_ext.tsv' (contains along with completeness and contamination parameters, other metrics related to the quality of the assembled genome, such as N50, mean contig, etc)
+awk -F',' '/^GCA_/ { print $1, $11, $12 }' bin_stats_ext.tsv > genome_quality.txt # extracting only those columns I'm interested. Note that I used comma as a separator, which will give me as the first column not only the genome GCA identification, but also the taxonomic annotation, which we'll remove with the command below
+awk -F' ' '/^GCA_/ { print $1, $6, $8 }' genome_quality.txt > genome_quality_filtered.txt
+echo "Genome_ID Completeness Contamination" > genome_quality_filt_Whead.txt # creating a file with the headers
+cat genome_quality_filtered.txt >>  genome_quality_filt_Whead.txt
+
+## Creating scatter plots in R - completeness x contamination
+### import dataset into Rstudio
+library(ggplot2)
+genomes <- genome_quality_filt_Whead
+
+### Set cutoff values
+completeness_cutoff <- 97
+contamination_cutoff <- 3
+
+### Create a new column for color based on conditions
+genomes$Color <- ifelse(genomes$Completeness > completeness_cutoff & genomes$Contamination < contamination_cutoff, "Above Cutoff", "Below Cutoff")
+
+### Create scatter plot
+ggplot(genomes, aes(x = Completeness, y = Contamination, color = Color)) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Above Cutoff" = "#8A9A5B", "Below Cutoff" = "#FF00FF")) +
+  labs(title = "Completeness vs. Contamination Scatter Plot", x = "Completeness", y = "Contamination") +
+  theme_minimal()
+
+# Quality control of downloaded genomes -QUAST
