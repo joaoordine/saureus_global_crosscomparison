@@ -31,6 +31,7 @@ ggplot(genomes, aes(x = Completeness, y = Contamination, color = Color)) +
 conda create --name quast
 conda activate quast
 conda install -c bioconda quast
+/temporario2/11217468/miniconda3/envs/quast/bin/quast.py *_genomic.fna
 
 
 
