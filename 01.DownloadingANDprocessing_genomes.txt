@@ -47,7 +47,8 @@ for file in ./*_genomic.fna.gz; do
     filename="${file%.*}"    
     mv "$filename" genome_files/; done
 
-
+### Checking how many files were downloaded and moved to genome_files
+ls | grep -c GCA # 1813
 
 
 
