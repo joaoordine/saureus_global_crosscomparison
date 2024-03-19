@@ -28,3 +28,9 @@ ggplot(genomes, aes(x = Completeness, y = Contamination, color = Color)) +
   theme_minimal()
 
 # Quality control of downloaded genomes -QUAST
+conda create --name quast
+conda activate quast
+conda install -c bioconda quast
+
+
+
