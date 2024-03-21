@@ -8,25 +8,6 @@ awk -F' ' '/^GCA_/ { print $1, $6, $8 }' genome_quality.txt > genome_quality_fil
 echo "Genome_ID Completeness Contamination" > genome_quality_filt_Whead.txt # creating a file with the headers
 cat genome_quality_filtered.txt >>  genome_quality_filt_Whead.txt
 
-## Creating scatter plots in R - completeness x contamination
-### import dataset into Rstudio
-library(ggplot2)
-genomes <- genome_quality_filt_Whead
-
-### Set cutoff values
-completeness_cutoff <- 97
-contamination_cutoff <- 3
-
-### Create a new column for color based on conditions
-genomes$Color <- ifelse(genomes$Completeness > completeness_cutoff & genomes$Contamination < contamination_cutoff, "Above Cutoff", "Below Cutoff")
-
-### Create scatter plot
-ggplot(genomes, aes(x = Completeness, y = Contamination, color = Color)) +
-  geom_point(size = 2) +
-  scale_color_manual(values = c("Above Cutoff" = "#8A9A5B", "Below Cutoff" = "#FF00FF")) +
-  labs(title = "Completeness vs. Contamination Scatter Plot", x = "Completeness", y = "Contamination") +
-  theme_minimal()
-
 # Quality control of downloaded genomes -QUAST
 conda create --name quast
 conda activate quast
