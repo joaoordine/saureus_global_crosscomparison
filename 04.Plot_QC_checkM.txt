@@ -28,4 +28,12 @@ B <- ggplot(genomes, aes(x = Completeness, y = Contamination, color = Color)) +
   labs(title = "Completeness vs. Contamination Scatter Plot", x = "Completeness", y = "Contamination") +
   theme_minimal()
   
-## INCLUDE GRID TO MAKE A SINGLE FIGURE WITH FIGURES A AND B
+## Combine figures 
+options(repr.plot.width=12, repr.plot.height=12)
+
+library(ggpubr)
+
+ggarrange(A, B, 
+          labels = c("A", "B"),
+          font.label = list(size = 18),
+          ncol = 2, nrow = 1)
