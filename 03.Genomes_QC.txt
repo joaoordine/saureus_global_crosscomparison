@@ -1,4 +1,4 @@
-# Quality control of downloaded genomes -checkM 
+# Quality control of downloaded genomes -checkM v1.2.2
 source /temporario2/11217468/miniconda3/bin/activate checkm
 checkm lineage_wf genome_files checkm_output 
 
@@ -8,7 +8,7 @@ awk -F' ' '/^GCA_/ { print $1, $6, $8 }' genome_quality.txt > genome_quality_fil
 echo "Genome_ID Completeness Contamination" > genome_quality_filt_Whead.txt # creating a file with the headers
 cat genome_quality_filtered.txt >>  genome_quality_filt_Whead.txt
 
-# Quality control of downloaded genomes -QUAST
+# Quality control of downloaded genomes -QUAST v5.2.0
 conda create --name quast
 conda activate quast
 conda install -c bioconda quast
