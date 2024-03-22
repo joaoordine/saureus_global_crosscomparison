@@ -1,4 +1,4 @@
-# Retrieving S. aureus complete genomes from NCBI
+# Retrieving S. aureus complete genomes from NCBI - March 18th 2024
 
 ## Getting the accessions list and processing it
 wget ftp://ftp.ncbi.nlm.nih.gov/genomes/genbank/bacteria/assembly_summary.txt # Downloading all bacterial assembled genomes from NCBI
