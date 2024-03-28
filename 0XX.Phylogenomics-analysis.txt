@@ -8,6 +8,8 @@ phylophlan_setup_database \
     -g s__Staphylococcus_aureus \
     -o Saureus_markers_out \
     --verbose 2>&1 | tee logs/phylophlan_setup_database.log
+### Counting the number of marker genes identified 
+grep -c ">s--Staphylococcus-aureus" Saureus_markers_out/s__Staphylococcus_aureus.faa # 1405
 
 ## Generating the configuration file
 phylophlan_write_config_file \
