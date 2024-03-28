@@ -1,0 +1,97 @@
+# Phylogenomics analysis 
+
+#--------------------------- Using PhyloPhlan v3.1.1   - reconstructs strain-level phylogenies from among the closest species using clade specific maximally informative markers
+conda install -c bioconda phylophlan
+
+## Setting up database with specific S. aureus marker genes
+phylophlan_setup_database \
+    -g s__Staphylococcus_aureus \
+    -o Saureus_markers_out \
+    --verbose 2>&1 | tee logs/phylophlan_setup_database.log
+
+## Generating the configuration file
+phylophlan_write_config_file \
+    -o Saureus_phylog_config.cfg \
+    -d a \
+    --force_nucleotides \
+    --db_aa diamond \
+    --map_aa diamond \
+    --map_dna diamond \
+    --msa mafft \
+    --trim trimal \
+    --tree1 fasttree \
+    --tree2 raxml
+
+## Creating phylogenetic tree
+phylophlan \
+    -i QC_filtered_genome_files \
+    -o PhyloPhlan_Tree_Output \
+    -d Saureus_markers_out \
+    --trim greedy \
+    --not_variant_threshold 0.99 \
+    --remove_fragmentary_entries \
+    --fragmentary_threshold 0.67 \
+    -t a \
+    -f Saureus_phylog_config.cfg \
+    --diversity low \
+    --force_nucleotides \
+    --nproc 20 \
+    --verbose 2>&1 | tee logs/phylophlan__output_phylophlan.log
+    
+#--------------------------- Pan-genome analysis - PanViTa - clustermap with data grouped with Euclidean distance measure  
+
+## Installing tool and its dependencies 
+git clone https://github.com/dlnrodrigues/panvita.git
+cd panvita
+python3 panvita.py -u
+python3 panvita.py -h
+
+
+## Moving all gbk files from Prokka into a single directory 
+# GET CODE STRUCTURE FROM MONKEYS CODES' LOOP THROUGH GENOME DIRECTORIES 
+
+## If any dependencie isn't installed automatically, run the following
+###conda install -c anaconda wget
+###conda install seaborn
+###conda install pandas
+###conda install -c conda-forge matplotlib
+###conda install -c anaconda basemap
+
+## Run the tool 
+python3 panvita.py -card -vfdb -bacmet -i 80 -c 80 ./*.gbk 
+
+
+#--------------------------- Pan-genome analysis - ROARY v3.13.0
+conda install bioconda::roary
+
+## Moving all gff files from Prokka into a single directory 
+
+## Inferring the pangenome
+mkdir roary_output  
+roary -e -n -v -f roary_output -p 5 gff_prokka/*.gff 
+
+## Creating plots 
+python roary_plots.py core_gene_alignment.nwk gene_presence_absence.csv
+
+## Analyzing specific genes annotated in the pangenome - check Pangenome sequence analysis in https://github.com/microgenomics/tutorials/blob/master/pangenome.md
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
