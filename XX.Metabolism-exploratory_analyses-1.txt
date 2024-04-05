@@ -1,0 +1,81 @@
+# Metabolism exploratatory analyses - processing downloaded proteins and building HMM profiles 
+source ~/.bashrc
+conda init --all
+conda activate bioinfo
+
+## Download sequences of interest from UNIPROT (both curated and not curated ones)
+
+## Organizing your server space 
+mkdir metabolism_analyses
+cd metabolism_analyses/
+mkdir uniprot_seqs
+cd uniprot_seqs
+scp -r -P 8020 -i ./id_ed25519 /home/strawberry/Documents/Saureus_genomes/metabolism/*.gz 11217468@localhost:/temporario2/11217468/projects/saureus_global/metabolism_analyses/uniprot_seqs
+
+## Extracting gunzziped files 
+for file in *.gz; do
+    gunzip -k "$file"
+done
+ 
+## Removing duplicated sequences with CD-HIT v4.8.1
+cd ..
+mkdir filtered_sequences
+cd uniprot_seqs
+
+for file in *.fasta; do
+    output_file="/temporario2/11217468/projects/saureus_global/metabolism_analyses/filtered_sequences/${file%.*}_FILT.fasta"
+    cd-hit -i "$file" -o "$output_file" -c 1.0 # using 100% identity as threashold 
+done
+
+cd ../filtered_sequences
+mkdir clusters
+mv *.fasta.clstr clusters/
+
+## Renaming downloaded sequences 
+mv uniprotkb_arcA_arginine_2024_04_02_FILT.fasta arcA_filt.fasta # did this for each file individually 
+
+
+## Multiple sequence alignment of filtered sequences with MAFFT
+mkdir aligned_proteins
+
+for file in *.fasta; do
+    filename=$(basename "$file")  # Extract the filename
+    filename_no_ext="${filename%_filt.fasta}"  # Remove the file extension
+    output_file="/temporario2/11217468/projects/saureus_global/metabolism_analyses/aligned_proteins/${filename_no_ext}_align.fasta"
+    mafft "${file}" > "${output_file}" --thread 4
+done
+cd aligned_proteins
+
+## Create the HMM models with HMMER 
+cd ..
+mkdir hmm_profiles
+cd aligned_proteins
+
+for file in *.fasta; do
+    filename=$(basename "$file")  # Extract the filename
+    filename_no_ext="${filename%_align.fasta}"  # Remove the file extension
+    output_file="/temporario2/11217468/projects/saureus_global/metabolism_analyses/hmm_profiles/${filename_no_ext}.hmm"
+    
+    hmmbuild "${output_file}" "${file}"
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
