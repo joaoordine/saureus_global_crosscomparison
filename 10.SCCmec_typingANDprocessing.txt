@@ -4,7 +4,7 @@
 vim SCCmec_primers.fasta
 
 ## Set the directory containing genome files
-genome_dir="/temporario/11217468/Saureus_genomes/QC_filtered_genome_files"
+genome_dir="/temporario2/11217468/projects/saureus_global/QC_filtered_genome_files"
 
 ## Create a BLAST database
 makeblastdb -in /temporario2/11217468/projects/saureus_global/sccmec/SCCmec_primers.fasta -dbtype nucl -out db/SCCmecprimer_db
