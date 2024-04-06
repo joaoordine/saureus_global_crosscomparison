@@ -1,5 +1,5 @@
 # Discarding genomes that didn't meet the quality criteria 
-awk '{print $1".fna", $2, $3}' quality_filtered_genomes.txt > fna_quality_filtered_genomes.txt # adding .fna in the end of each Genome_ID so that it`ll have the same name as its corresponding file
+awk '{print $1".fna", $2, $3}' genome_quality_filt_Whead.txt > fna_quality_filtered_genomes.txt # adding .fna in the end of each Genome_ID so that it`ll have the same name as its corresponding file
 
 ## Set the criteria values
 completeness_cutoff=97
