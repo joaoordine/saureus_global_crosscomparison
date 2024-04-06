@@ -13,4 +13,8 @@ while read -r genome completeness contamination; do
     fi
 done < "fna_quality_filtered_genomes.txt"
 
+## Count how many high quality genomes there are
+cd QC_filtered_genome_files
+ls | grep -c GCA_
+
 
