@@ -1,5 +1,4 @@
 # Genome annotation - Prokka v1.13
-mkdir prokka_output
 
 ## Iterate over each genome file in the directory
 for genome_file in /temporario2/11217468/projects/saureus_global/QC_filtered_genome_files/*.fna; do
