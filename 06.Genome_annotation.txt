@@ -13,6 +13,5 @@ for genome_file in /temporario2/11217468/projects/saureus_global/QC_filtered_gen
         output_dir="${genome_name}_prokka_out_$index"
     done
 
-    prokka --outdir prokka_output/"$output_dir" --prefix "$genome_name" "$genome_file" --cpus 0
-    && echo "Annotated $genome_name"
+    prokka --outdir prokka_output/"$output_dir" --prefix "$genome_name" "$genome_file" --cpus 0 && echo "Annotated $genome_name"
 done
