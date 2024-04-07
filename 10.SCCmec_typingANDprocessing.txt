@@ -21,12 +21,12 @@ for genome_file in "${genome_dir}"/*.fna; do
 done
 
 ## Checking how many empty files I have
-find /temporario2/11217468/projects/saureus_global/sccmec/BLASTn_output/ -type f -empty | wc -l # ADD NUMBER
+find /temporario2/11217468/projects/saureus_global/sccmec/BLASTn_output/ -type f -empty | wc -l # 783
 
 ## Processing output - make tabular (True/False) summary of BLASTn output files all genomes
-echo -e "Sample\tTYPE_I\tTYPE_II\tTYPE_III\tTYPE_IVa\tTYPE_IVb\tTYPE_IVc\tTYPE_IVd\tTYPE_IVe\tTYPE_V\tccr4\tmecA147" > /temporario/11217468/Saureus_genomes/summary_SCCmectable.txt # Create the header 
+echo -e "Sample\tTYPE_I\tTYPE_II\tTYPE_III\tTYPE_IVa\tTYPE_IVb\tTYPE_IVc\tTYPE_IVd\tTYPE_IVe\tTYPE_V\tccr4\tmecA147" > //temporario2/11217468/projects/saureus_global/sccmec//summary_SCCmectable.txt # Create the header 
 
-for blastn_result in /temporario/11217468/Saureus_genomes/BLASTn_output/*.txt; do
+for blastn_result in /temporario2/11217468/projects/saureus_global/sccmec/BLASTn_output/*.txt; do
     ## Extract the sample name from the filename
     sample=$(basename "$blastn_result" | sed 's/_primer_hits\.txt//')
 
@@ -40,7 +40,7 @@ for blastn_result in /temporario/11217468/Saureus_genomes/BLASTn_output/*.txt; d
     TYPE_IVd="False"
     TYPE_IVe="False"
     TYPE_V="False"
-    ccr4="False"
+    TYPE_V/VIII="False"
     mecA147="False"
 
     ### Check if hits are found in the second column of the blastn result
@@ -81,7 +81,7 @@ for blastn_result in /temporario/11217468/Saureus_genomes/BLASTn_output/*.txt; d
     fi
 
     if grep -q -e "ccr4" "$blastn_result"; then
-        ccr4="True"
+        TYPE_V/VIII="True"
     fi
 
     if grep -q -e "mecA147" "$blastn_result"; then
@@ -89,7 +89,7 @@ for blastn_result in /temporario/11217468/Saureus_genomes/BLASTn_output/*.txt; d
     fi
 
     ### Output the tabular summary for this sample
-    echo -e "$sample\t$TYPE_I\t$TYPE_II\t$TYPE_III\t$TYPE_IVa\t$TYPE_IVb\t$TYPE_IVc\t$TYPE_IVd\t$TYPE_IVe\t$TYPE_V\t$ccr4\t$mecA147" >> /temporario/11217468/Saureus_genomes/summary_SCCmectable.txt
+    echo -e "$sample\t$TYPE_I\t$TYPE_II\t$TYPE_III\t$TYPE_IVa\t$TYPE_IVb\t$TYPE_IVc\t$TYPE_IVd\t$TYPE_IVe\t$TYPE_V\t$ccr4\t$mecA147" >> /temporario2/11217468/projects/saureus_global/sccmec/summary_SCCmectable.txt
 done
 
 sed 's/\t/,/g' summary_SCCmectable.txt > summary_SCCmectable.csv # to make it more easily to import in R/excel 
