@@ -40,7 +40,7 @@ for blastn_result in /temporario2/11217468/projects/saureus_global/sccmec/BLASTn
     TYPE_IVd="False"
     TYPE_IVe="False"
     TYPE_V="False"
-    TYPE_V/VIII="False"
+    ccr4="False"
     mecA147="False"
 
     ### Check if hits are found in the second column of the blastn result
@@ -81,7 +81,7 @@ for blastn_result in /temporario2/11217468/projects/saureus_global/sccmec/BLASTn
     fi
 
     if grep -q -e "ccr4" "$blastn_result"; then
-        TYPE_V/VIII="True"
+        ccr4="True"
     fi
 
     if grep -q -e "mecA147" "$blastn_result"; then
