@@ -21,7 +21,7 @@ for genome_file in "$genome_directory"/*.fna; do
 done
 
 # Filtering the output files by Element type --> selecting only environmental stress resistance genes (AMR/VF genes will be obtained from ABRICATE)
-for file in "$genome_directory"/*.fna; do
+for file in "$output_directory"/*.fna; do
     output_file="${file%.fna}_filtered.tsv" # each output file will be named according to the file (with .fna extension removed) and added by filtered
     awk -F'\t' 'NR==1 || $9 == "STRESS"' "$file" > "$output_file"
 done
