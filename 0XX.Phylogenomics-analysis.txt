@@ -39,7 +39,16 @@ phylophlan \
     --force_nucleotides \
     --nproc 20 \
     --verbose 2>&1 | tee logs/phylophlan__output_phylophlan.log
-    
+
+# Obtaining bootstrap values for the phylogenetic tree - since PhyloPhlan does not generate bootstrap values by itself
+
+## Generate Bootstrap Replicates
+raxmlHPC -m GTRCAT -p 51234 -N 100 -s QC_filtered_genome_files_concatenated.aln.reduced -n boot
+
+## Perform Bootstrapping with RAxML
+raxmlHPC -m GTRCAT -p 51234 -f b -t RAxML_bestTree.QC_filtered_genome_files_refined.tre -z RAxML_bootstrap.boot -n output_bootstrap.tre
+
+
 #--------------------------- Pan-genome analysis - PanViTa - clustermap with data grouped with Euclidean distance measure  
 
 ## Installing tool and its dependencies 
