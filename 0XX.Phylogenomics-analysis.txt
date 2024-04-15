@@ -59,7 +59,18 @@ python3 panvita.py -h
 
 
 ## Moving all gbk files from Prokka into a single directory 
-# GET CODE STRUCTURE FROM MONKEYS CODES' LOOP THROUGH GENOME DIRECTORIES 
+cd prokka_output
+mkdir all_gbk_files
+for dir in GCA_*; do
+    scp /temporario2/11217468/projects/saureus_global/prokka_output/"$dir"/*.gbk all_gbk_files && 
+    echo "Copy of $dir was sent"
+done 
+
+mkdir all_gff_files
+for dir in GCA_*; do
+    scp /temporario2/11217468/projects/saureus_global/prokka_output/"$dir"/*.gff all_gff_files && 
+    echo "Copy of $dir was sent"
+done 
 
 ## If any dependencie isn't installed automatically, run the following
 ###conda install -c anaconda wget
