@@ -66,12 +66,6 @@ for dir in GCA_*; do
     echo "Copy of $dir was sent"
 done 
 
-mkdir all_gff_files
-for dir in GCA_*; do
-    scp /temporario2/11217468/projects/saureus_global/prokka_output/"$dir"/*.gff all_gff_files && 
-    echo "Copy of $dir was sent"
-done 
-
 ## If any dependencie isn't installed automatically, run the following
 ###conda install -c anaconda wget
 ###conda install seaborn
@@ -80,17 +74,24 @@ done
 ###conda install -c anaconda basemap
 
 ## Run the tool 
-python3 panvita.py -card -vfdb -bacmet -i 80 -c 80 ./*.gbk 
+input_dir="/temporario2/11217468/projects/saureus_global/prokka_output/all_gbk_files"
 
+python3 panvita.py -card -vfdb -bacmet -i 80 -c 80 "$input_dir"/*.gbk 
 
 #--------------------------- Pan-genome analysis - ROARY v3.13.0
 conda install bioconda::roary
 
 ## Moving all gff files from Prokka into a single directory 
+mkdir all_gff_files
+for dir in GCA_*; do
+    scp /temporario2/11217468/projects/saureus_global/prokka_output/"$dir"/*.gff all_gff_files && 
+    echo "Copy of $dir was sent"
+done 
 
 ## Inferring the pangenome
 mkdir roary_output  
-roary -e -n -v -f roary_output -p 5 gff_prokka/*.gff 
+input_dir="/temporario2/11217468/projects/saureus_global/prokka_output/all_gff_files"
+roary -e -n -v -f roary_output -p 5 "$input_dir"/*.gff 
 
 ## Creating plots 
 python roary_plots.py core_gene_alignment.nwk gene_presence_absence.csv
