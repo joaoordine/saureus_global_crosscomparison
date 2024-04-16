@@ -59,6 +59,14 @@ for file in *.fasta; do
     hmmbuild "${output_file}" "${file}"
 done
 
+## Aligning annotated proteins from Prokka against hmm profiles
+
+### Extracting .faa files to a separated directory
+get code here
+
+### Execute hmmsearch and append the results directly to the tabular output file
+mkdir hmmersearch_output
+
 
 
 
