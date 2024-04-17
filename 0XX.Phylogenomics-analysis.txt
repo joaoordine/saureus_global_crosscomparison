@@ -43,10 +43,10 @@ phylophlan \
 # Obtaining bootstrap values for the phylogenetic tree - since PhyloPhlan does not generate bootstrap values by itself
 
 ## Generate Bootstrap Replicates
-raxmlHPC -m GTRCAT -p 51234 -N 100 -s QC_filtered_genome_files_concatenated.aln.reduced -n bootstrap -T 5 -w /temporario2/11217468/projects/saureus_global/phylogeny/PhyloPhlan_Tree_Output/bootstrap-trees
+raxmlHPC-PTHREADS -m GTRCAT -p 51234 -N 100 -s QC_filtered_genome_files_concatenated.aln.reduced -n bootstrap -T 5 -w /temporario2/11217468/projects/saureus_global/phylogeny/PhyloPhlan_Tree_Output/bootstrap-trees
 
 ## Perform Bootstrapping with RAxML
-raxmlHPC -m GTRCAT -p 51234 -f b -t RAxML_bestTree.QC_filtered_genome_files_refined.tre -z RAxML_bootstrap.boot -n output_bootstrap.tre -T 5 -w /temporario2/11217468/projects/saureus_global/phylogeny/PhyloPhlan_Tree_Output/bootstrap-trees
+raxmlHPC-PTHREADS -m GTRCAT -p 51234 -f b -t RAxML_bestTree.QC_filtered_genome_files_refined.tre -z RAxML_bootstrap.boot -n output_bootstrap.tre -T 5 -w /temporario2/11217468/projects/saureus_global/phylogeny/PhyloPhlan_Tree_Output/bootstrap-trees
 
 
 #--------------------------- Pan-genome analysis - PanViTa - clustermap with data grouped with Euclidean distance measure  
