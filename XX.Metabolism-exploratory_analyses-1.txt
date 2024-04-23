@@ -59,7 +59,43 @@ for file in *.fasta; do
     hmmbuild "${output_file}" "${file}"
 done
 
+## Search for homologous proteins and processing alignmnet output
 
+source ~/.bashrc
+conda init --all
+conda activate bioinfo
+
+## Extracting .faa files to a separated directory
+mkdir all_faa_files
+for dir in GCA_*; do
+    scp /temporario2/11217468/projects/saureus_global/prokka_output/"$dir"/*.faa all_faa_files && 
+    echo "Copy of $dir was sent"
+done  
+
+## Aligning hmm profiles against genomes 
+mkdir -p hmmersearch_output
+
+### Define the directories containing genomes and hmm profiles 
+hmm_dir="/temporario2/11217468/projects/saureus_global/metabolism_analyses/hmm_profiles"
+genome_dir="/temporario2/11217468/projects/saureus_global/prokka_output/all_faa_files"
+
+### Loop through hmm files in their directory
+for hmm_file in "$hmm_dir"/*.hmm; do
+    hmm_name=$(basename "$hmm_file" .hmm)    # Extract protein name (without .hmm extension)
+    for dir_file in "$genome_dir"/*.faa; do   # Loop through genome files 
+        seq_name=$(basename "$dir_file" .faa) # Extract genome name (without .faa extension)
+        # Debug: Print sequence name
+        echo "Processing sequence: $seq_name"
+        # Define output file path
+        output_file="${hmm_dir}/hmmersearch_output/${hmm_name}_${seq_name}_output.tsv"
+        # Perform hmmsearch and redirect the output
+        hmmsearch --cpu 5 --domtblout "$output_file" "$hmm_file" "$dir_file"  
+        echo "Executed hmmsearch for $hmm_name against $seq_name. Output saved to $output_file."
+    done
+done
+
+### Checking out how many hits I got 
+ls | grep -c .tsv
 
 
 
