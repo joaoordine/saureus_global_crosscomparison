@@ -15,3 +15,14 @@ Go to script 8. Visualizing MLST output
 Go to script 9. SCCmec typing and processing 
 Go to script 10. Visualize SCCmec groups
 Go to script 11. ABRICATE pipeline
+Go to script 12. Visualizing ABRICATE output
+Go to script 13. AMRFinder Plus Pipeline
+Go to script 14. Processing AMRFinder output
+Go to script 15. Visualizing AMRFinder output
+
+## Phylo and pangenomic analyses
+Go to script 15.
+Go to script 15. ..
+
+## Genomic analyses of the sialic acid metabolism
+
