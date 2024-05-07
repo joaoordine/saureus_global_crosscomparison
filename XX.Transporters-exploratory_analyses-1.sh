@@ -74,7 +74,7 @@ for hmm_file in "$hmm_dir"/*.hmm; do
 done
 
 ### Checking out how many hits I got 
-ls | grep -c .tsv # 17140
+ls | grep -c .tsv # 53,137
 
 
 
