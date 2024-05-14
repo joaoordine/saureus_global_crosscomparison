@@ -105,7 +105,7 @@ write.table(hit_counts_df, "SCCmec_count_table.tsv", sep = "\t", quote = FALSE, 
 plot_sccmec_count <- plot_sccmec_count[order(plot_sccmec_count$Category, -plot_sccmec_count$Count),]
 ggplot(plot_sccmec_count, aes(x = Category, y = Count, fill = Group)) +
   geom_bar(stat = "identity") +
-  labs(title = "Stacked Bar Plot of SCCmec Counts by Category", x = "Category", y = "Number of Genomes") +
+  labs(x = "Category", y = "Number of Genomes") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_brewer(palette = "Set3")  # Use a color palette from RColorBrewer
