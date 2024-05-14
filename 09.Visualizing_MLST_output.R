@@ -10,18 +10,17 @@ others_data <- data.frame(Count = sum(data$Count[data$Count <= 10]),
 combined_data <- rbind(filtered_data, others_data) # Combine the filtered data and 'Others' data
 
 ## Create a custom color palette
-my_colors <- c("Others" = "black", "Unclassified" = "#565656")
+my_colors <- c("Others" = "black", "Unclassified" = "#303030")
 
 unique_types <- unique(filtered_data$Sequence_Type)
 for (st in unique_types) {
-    my_colors <- c(my_colors, setNames("green", st))
-} # ADAPT THIS AFTER YOU KNOW HOW MANY MAJOR STs THERE ARE - PUT THE CORRESPONDING COLOR OF EACH ONE 
-
+    my_colors <- c(my_colors, setNames("gray", st))
+} 
 ## Reorder Sequence_Type by Count in ascending order
 combined_data$Sequence_Type <- reorder(combined_data$Sequence_Type, combined_data$Count)
 
 ## Create the barplot with different fill colors
 ggplot(combined_data, aes(x = Count, y = Sequence_Type, fill = Sequence_Type)) +
     geom_bar(stat = "identity") +
-    labs(title = "Sequence Type Counts", x = "Count", y = "Sequence Type") +
+    labs(x = "Absolute Frequency", y = "Sequence Type") +
     scale_fill_manual(values = my_colors)
