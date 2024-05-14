@@ -15,7 +15,7 @@ genomes$Color <- ifelse(genomes$Completeness > completeness_cutoff & genomes$Con
 ### Create scatter plot
 A <- ggplot(genomes, aes(x = Completeness, y = Contamination, color = Color)) +
   geom_point(size = 2) +
-  scale_color_manual(values = c("Above Cutoff" = "#8A9A5B", "Below Cutoff" = "#FF00FF")) +
+  scale_color_manual(values = c("Above Cutoff" = "black", "Below Cutoff" = "#808080")) +
   labs(title = "Completeness vs. Contamination Scatter Plot", x = "Completeness", y = "Contamination") +
   theme_minimal() +
   expand_limits(x = 0, y = 0)  # Set the axes to start at zero
@@ -24,7 +24,7 @@ A <- ggplot(genomes, aes(x = Completeness, y = Contamination, color = Color)) +
 ### Create scatter plot
 B <- ggplot(genomes, aes(x = Completeness, y = Contamination, color = Color)) +
   geom_point(size = 2) +
-  scale_color_manual(values = c("Above Cutoff" = "#8A9A5B", "Below Cutoff" = "#FF00FF")) +
+  scale_color_manual(values = c("Above Cutoff" = "#black", "Below Cutoff" = "#808080")) +
   labs(title = "Completeness vs. Contamination Scatter Plot", x = "Completeness", y = "Contamination") +
   theme_minimal()
   
