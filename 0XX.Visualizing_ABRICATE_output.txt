@@ -58,9 +58,10 @@ abricate_blactams_mrsa <- abricate_blactams %>%
 ### Create bar plot for MRSA NUM_FOUND with specified y-axis limits
 plot_mrsa <- ggplot(abricate_blactams_mrsa, aes(x = reorder(FILE, -NUM_FOUND), y = NUM_FOUND)) +
   geom_bar(stat = "identity", fill = "black") +
-  labs(title = "MRSA: Number of ARGs Found in Genomes", x = "Genomes", y = "Number of ARGs") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-  ylim(0, 30)  # Set y-axis limits to 0-30
+  labs(x = "Genomes", y = "Number of ARGs") +
+  theme(axis.text.x = element_blank()) +
+  ylim(0, 30) + # Set y-axis limits to 0-30
+  geom_hline(yintercept = median(abricate_blactams_mrsa$NUM_FOUND), linetype = "dashed", color = "red") 
 
 ### Filter data for MSSA (Category = "MSSA")
 abricate_blactams_mssa <- abricate_blactams %>%
@@ -69,9 +70,10 @@ abricate_blactams_mssa <- abricate_blactams %>%
 ### Create bar plot for MSSA NUM_FOUND with the same y-axis limits
 plot_mssa <- ggplot(abricate_blactams_mssa, aes(x = reorder(FILE, -NUM_FOUND), y = NUM_FOUND)) +
   geom_bar(stat = "identity", fill = "gray") +
-  labs(title = "MSSA: Number of ARGs Found in Genomes", x = "Genomes", y = "Number of ARGs") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-  ylim(0, 30)  # Set y-axis limits to 0-30
+  labs(x = "Genomes", y = "Number of ARGs") +
+  theme(axis.text.x = element_blank()) +
+  ylim(0, 30) + # Set y-axis limits to 0-30
+  geom_hline(yintercept = median(abricate_blactams_mssa$NUM_FOUND), linetype = "dashed", color = "red")
 
 options(repr.plot.width = 12, repr.plot.height = 6)
 
