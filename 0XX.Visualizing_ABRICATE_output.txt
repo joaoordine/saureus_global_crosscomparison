@@ -76,7 +76,7 @@ plot_mssa <- ggplot(abricate_blactams_mssa, aes(x = reorder(FILE, -NUM_FOUND), y
 options(repr.plot.width = 12, repr.plot.height = 6)
 
 ### Combine plots using ggpubr
-ggarrange(plot_mrsa, plot_mssa, labels = c("A", "B"), ncol = 2, nrow = 1, common.legend = TRUE)
+ggarrange(plot_mrsa, plot_mssa, labels = c("A", "B"), ncol = 2, nrow = 1, common.legend = TRUE, align = "hv")
 
 ## Processing ARGs summary output from abricate before plotting it 
 ### Loop through all columns except the first two (FILE and NUM_FOUND), so that I replace the coverage values by the number of times that ARGs was found in that specific genome (basically creating a count matrix)
