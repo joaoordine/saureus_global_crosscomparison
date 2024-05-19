@@ -1,19 +1,19 @@
 # Carbohydrate Transporters exploratatory analyses - processing BLASTp in R
 
+setwd("/temporario2/11217468/projects/saureus_global/transporters_blast/blastp_output")
+getwd()
+carb_transporters_processed <- fread("carb_transporters_processed.tsv", sep = "\t")
+print(head(carb_transporters_processed))
+
 library(dplyr)
 
-## Group rows by unique genomes (col 7)
+## Group rows by unique transporters (col 7)
 allCARB_transp_grouped <- carb_transporters_processed %>%
   group_by(Annotated_Protein)
 
 ## Filter out hits with low identity and bad evalues 
-allCARB_transp_grouped <- allCARB_transp_grouped %>%
-  filter(E_Value <= 0.001 & Identity > 25 & Bitscore 50) # Pearson, William R. "An introduction to sequence similarity (“homology”) searching." Current protocols in bioinformatics 42.1 (2013): 3-1. doi:10.1002/0471250953.bi0301s42.
-
-# Filter rows where the values in Transporter_DB column start with "tr"
 CARB_transp_filt <- allCARB_transp_grouped %>%
-  filter(substr(Transporter_DB, 1, 2) == "tr")
-
+  filter(E_Value <= 0.001 & Identity > 25 & Bitscore > 50) # Pearson, William R. "An introduction to sequence similarity (“homology”) searching." Current protocols in bioinformatics 42.1 (2013): 3-1. doi:10.1002/0471250953.bi0301s42.
 
 ## Removing duplicated hits (i.e. a hit for more than one annotated protein (prokka) in the same genome)	
 CARB_transp_filt <- CARB_transp_filt %>%
@@ -22,11 +22,32 @@ CARB_transp_filt <- CARB_transp_filt %>%
 View(CARB_transp_filt)
 write.table(CARB_transp_filt, file = "CARB_transporters_filt.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 
-# MAKE CORRESPONDENCE BETWEEN TRANSPORTERS UNIPROT CODE AND CORRESPONDING SUGAR --> THEN REPEAT THOSE CODES BELOW
+## Make a correspondence between transporter codes and their corresponding carbohydrate 
+codes_path <- "/temporario2/11217468/projects/saureus_global/transporters_blast/blastp_output/transporter_codes/transporters_codes.tsv"
+carb_transporters_codes <- read.table(codes_path, sep = "\t")
+transporters_codes <- as.data.frame(carb_transporters_codes)
+
+library(dplyr)
+library(stringr)
+### Extract codes between bars "|" in Transporter_DB column
+CARB_transporters_filt$Transporter_DB <- str_extract(CARB_transporters_filt$Transporter_DB, "(?<=\\|)[^|]+(?=\\|)") 
+
+### Create a lookup table for transporter codes and their corresponding headers
+lookup_table <- transporters_codes %>%
+  pivot_longer(cols = everything(), names_to = "Header", values_to = "Code")
+
+### Merge lookup table with CARB_transporters_filt to replace codes with headers
+CARB_transporters_mapped <- CARB_transporters_filt %>%
+  left_join(lookup_table, by = c("Transporter_DB" = "Code"))
+
+### Rename the new column 
+CARB_transporters_mapped <- CARB_transporters_mapped %>%
+  rename(Sugar = Header) %>%
+  mutate(Sugar = if_else(is.na(Sugar), "polysia_transporters", Sugar))
 
 ## Group the dataframe by Transporter and calculate summary statistics
-transporter_summary <- CARB_transp_filt %>%
-  group_by(Transporter_DB) %>%
+transporter_summary <- CARB_transporters_mapped %>%
+  group_by(Sugar) %>%
   summarise(
     Total_Transporters = n_distinct(Annotated_Protein),  # Count unique transporters per genome
     Max_Bitscore = max(Bitscore),                         # Maximum score per genome
@@ -52,7 +73,7 @@ View(transporter_summary)
 write.table(transporter_summary, file = "carb_transporter_summary.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 
 ## Group the dataframe by Genome and calculate summary statistics
-genome_summary <- CARB_transp_filt %>%
+genome_summary <- CARB_transporters_mapped %>%
   group_by(Genome) %>%
   summarise(
     Total_Transporters = n_distinct(Annotated_Protein),  # Count unique transporters per genome
@@ -112,7 +133,7 @@ library(dplyr)
 transp_distribution <- ggplot(carbs_ARGs_df, aes(x = reorder(Genome, -Total_Transporters), y = Total_Transporters)) +
   geom_bar(stat = "identity", fill = "gray") +
   labs(x = "Genome", y = "Total Carbohydrate Transporters", title = "Carbohydrate Transporter Distribution across Genome") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))  # Rotate x-axis labels for better readability
+  theme(axis.text.x = element_blank())  # Remove x-axis labels for better readability
 transp_distribution
 
 ### Scatter plot ARG x Transporters
@@ -139,38 +160,276 @@ wilcox_carb1 <- wilcox.test(Total_Transporters ~ Category, data = carbs_ARGs_df,
                              exact = TRUE, correct = TRUE, 
                              p.adjust.method = "bonferroni", 
                              conf.int = TRUE, conf.level = 0.95)
-wilcox_carb1 # W = 19918, p-value = 0.0006478; 95% CI: 0.9999955 2.9999665
+wilcox_carb1 # W = 133360, p-value = 2.453e-08; 95% CI: 1.000017 2.000064
+p_value_carb1 = 2.453e-08
 
-## Group observations into two levels (genomes with 0-14 ARG copies and with 15-30 ARG copies) and perform stat test
-carbs_ARGs_df$Total_ARGs_group <- cut(carbs_ARGs_df$Total_ARGs, breaks = c(-Inf, 13, 30), labels = c("ARGs < median", "ARGs > median"))
-
-wilcox_carb2 <- wilcox.test(carbs_ARGs_df$Total_Transporters ~ carbs_ARGs_df$Total_ARGs_group, 
-            p.adjust.method = "bonferroni",
-            exact = TRUE, 
-            correct = TRUE,
-            conf.int = TRUE,
-            conf.level = 0.95) 
-wilcox_carb2 # W = 19508, p-value < 2.2e-16; 95% CI: -8.276209e-05 -3.934423e-06
-p_value_carb2 = 2.2e-16
-
-ggplot(carbs_ARGs_df, aes(x = Total_ARGs_group, y = Total_Transporters, fill = Total_ARGs_group)) +
+ggplot(carbs_ARGs_df, aes(x = Category, y = Total_Transporters, fill = Category)) +
   geom_boxplot() +
   labs(x = "Category", y = "Carb. Transporter Copies") +
   theme_minimal() +
   # Add significance annotation
-  geom_signif(comparisons = list(c("ARGs < median", "ARGs > median")), 
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
               textsize = 6, 
               map_signif_level = TRUE) +
   # Add p-value annotation
-  annotate("text", x = 1.5, y = max(carbs_ARGs_df$Total_Transporters + carbs_ARGs_df$Total_ARGs), 
-           label = paste("p-value:", round(p_value_carb4, 3)), 
+  annotate("text", x = 1.5, y = max(carbs_ARGs_df$Total_Transporters), 
+           label = paste("p-value > 0.001"), 
            hjust = 0.5, vjust = -0.5, size = 4)
 
+## Combining b_lactams table with the CARB_transporters_mapped df
+full_carbs_ARGs_df <- merge(abricate_blactams, CARB_transporters_mapped, by = "Genome", all.x = TRUE)
+View(full_carbs_ARGs_df)
+
+## Group by Genome and Sugar, and count the occurrences
+grouped_df <- full_carbs_ARGs_df %>%
+  group_by(Genome, Sugar, Category) %>%
+  summarise(Transporter_Count = n())
+
+## Subset df and repeat this for each unique sugar transporter 
+arabinose_ARGs <- grouped_df %>% filter(Sugar == "arabinose_transporters")
+mannitol_ARGs <- grouped_df %>% filter(Sugar == "mannitol_transporters")
+sia_ARGs <- grouped_df %>% filter(Sugar == "sia_transporters")
+polysia_ARGs <- grouped_df %>% filter(Sugar == "polysia_transporters")
+galactose_ARGs <- grouped_df %>% filter(Sugar == "galactose_transporters")
+mannose_ARGs <- grouped_df %>% filter(Sugar == "mannose_transporters")
+sucrose_ARGs <- grouped_df %>% filter(Sugar == "sucrose_transporters")
+glucose_ARGs <- grouped_df %>% filter(Sugar == "glucose_transporters")
+lactose_ARGs <- grouped_df %>% filter(Sugar == "lactose_transporters")
+ribose_ARGs <- grouped_df %>% filter(Sugar == "ribose_transporters")
+
+arabinose_wilcox <- wilcox.test(Transporter_Count ~ Category, data = arabinose_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+arabinose_wilcox # W = 117540, p-value = 0.02918; 95% CI: 6.533734e-05 4.505734e-05
+
+arabinose_boxplot <- ggplot(arabinose_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "Arabinose Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(arabinose_ARGs$Transporter_Count), 
+           label = paste("p-value = 0.029"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+arabinose_boxplot
+
+sia_wilcox <- wilcox.test(Transporter_Count ~ Category, data = sia_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+sia_wilcox # W = 129172, p-value = 3.589e-08; 95% CI: 1.602656e-05 1.518874e-05
+
+sia_boxplot <- ggplot(sia_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "Sialic acid Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(sia_ARGs$Transporter_Count), 
+           label = paste("p-value > 0.001"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+sia_boxplot
+
+mannitol_wilcox <- wilcox.test(Transporter_Count ~ Category, data = mannitol_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+mannitol_wilcox # W = 120170, p-value = 0.005939; 95% CI: 2.790275e-05 7.575369e-05
+
+mannitol_boxplot <- ggplot(mannitol_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "Mannitol Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(mannitol_ARGs$Transporter_Count), 
+           label = paste("p-value > 0.001"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+mannitol_boxplot
+
+polysia_wilcox <- wilcox.test(Transporter_Count ~ Category, data = polysia_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+polysia_wilcox # W = 110352, p-value = 0.1606; 95% CI: -7.522039e-05  4.373916e-06
+
+polysia_boxplot <- ggplot(polysia_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "Polysialic acid Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(polysia_ARGs$Transporter_Count), 
+           label = paste("p-value = 0.161"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+polysia_boxplot
+
+galactose_wilcox <- wilcox.test(Transporter_Count ~ Category, data = galactose_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+galactose_wilcox # W = 112826, p-value = 0.006195; 95% CI:  -7.444961e-05  5.228018e-05
+
+galactose_boxplot <- ggplot(galactose_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "Galactose Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(galactose_ARGs$Transporter_Count), 
+           label = paste("p-value > 0.001"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+galactose_boxplot
+
+mannose_wilcox <- wilcox.test(Transporter_Count ~ Category, data = mannose_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+mannose_wilcox # W = 107892, p-value = 0.9541; 95% CI:  -7.993303e-05  2.373064e-05
+
+mannose_boxplot <- ggplot(mannose_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "Mannose Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(mannose_ARGs$Transporter_Count), 
+           label = paste("p-value = 0.945"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+mannose_boxplot
+
+glucose_wilcox <- wilcox.test(Transporter_Count ~ Category, data = glucose_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+glucose_wilcox #W = 109246, p-value = 0.7497; 95% CI:  -2.777387e-05  3.076857e-07
+
+glucose_boxplot <- ggplot(glucose_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "glucose Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(glucose_ARGs$Transporter_Count), 
+           label = paste("p-value = 0.749"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+glucose_boxplot
+
+sucrose_wilcox <- wilcox.test(Transporter_Count ~ Category, data = sucrose_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+sucrose_wilcox # W = 108362, p-value = 0.7873; 95% CI:   -5.904733e-05  5.947456e-05
+
+sucrose_boxplot <- ggplot(sucrose_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "sucrose Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(sucrose_ARGs$Transporter_Count), 
+           label = paste("p-value = 0.787"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+sucrose_boxplot
+
+lactose_wilcox <- wilcox.test(Transporter_Count ~ Category, data = lactose_ARGs,
+                             exact = TRUE, correct = TRUE, 
+                             p.adjust.method = "bonferroni", 
+                             conf.int = TRUE, conf.level = 0.95)
+lactose_wilcox # W = 124464, p-value = 0.0001783; 95% CI:    2.766172e-05 2.888186e-05
+
+lactose_boxplot <- ggplot(lactose_ARGs, aes(x = Category, y = Transporter_Count, fill = Category)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "lactose Transporter Copies") +
+  theme_minimal() +
+  # Add significance annotation
+  geom_signif(comparisons = list(c("MRSA", "MSSA")), 
+              textsize = 4, 
+              map_signif_level = TRUE) +
+  # Add p-value annotation
+  annotate("text", x = 1.5, y = max(lactose_ARGs$Transporter_Count), 
+           label = paste("p-value > 0.001"), 
+           hjust = 0.5, vjust = -1.2, size = 4)
+lactose_boxplot
+
+## Plotting all sugars with p < 0.05
+
+library(ggpubr)
+ggarrange(arabinose_boxplot, mannitol_boxplot, galactose_boxplot, lactose_boxplot, sia_boxplot,
+          labels = c("A", "B", "C", "D", "E"),
+          font.label = list(size = 18),
+          ncol = 2, nrow = 3,
+          legend = "right", 
+          common.legend = TRUE)
+
 write.table(carbs_ARGs_df, file = "carbs_ARGs_df.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
+write.table(full_carbs_ARGs_df, file = "carbs_ARGs_df.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 
+## Spearman rank correlation test 
+cor_ARG_transporters <- cor.test(carbs_ARGs_df$Total_Transporters, carbs_ARGs_df$Total_ARGs, method = "spearman") # S = 188171246, p-value < 2.2e-16; rho 0.2710382
 
+## Calculate odds-ratio - method: median-unbiased estimate & mid-p exact CI  --- correct the code below 
+library(epitools)
 
+### Creating my matrix 
+copy_number <- c('Genomes Above Median', 'Genomes Below Median')
+resistance <- c('MRSA', 'MSSA')
+OR_nanT <- matrix(c(594, 292, 127, 103), nrow=2, ncol=2, byrow=TRUE)
+dimnames(OR_nanT) <- list('Copy Number'=copy_number, 'Resistance Category'=resistance)
 
+oddsratio(OR_nanT) # odds ratio with 95% C.I. 1.649331 (1.226117 - 2.215623) / midp.exact 0.0009776512 
+
+OR_kpsT <- matrix(c(363, 380, 29, 116), nrow=2, ncol=2, byrow=TRUE)
+dimnames(OR_kpsT) <- list('Copy Number'=copy_number, 'Resistance Category'=resistance)
+
+oddsratio(OR_kpsT) # odds ratio with 95% C.I. 3.80132 (2.499973 - 5.955532) / midp.exact 4.052003e-11
+
+## Forest plot - odds ratio 
+transporter <- c('kpsT', 'nanT')
+col_names <- c('Sia Transporter', 'Odds Ratio', 'CI Low', 'CI High', 'Significance')
+OR_plot <- matrix(c('kpsT', 3.80, 2.50, 5.95, 4.052003E-11, 'nanT', 1.65, 1.33, 2.21, 0.0009776512), nrow=2, ncol=5, byrow=TRUE)
+dimnames(OR_plot) <- list('Sia Transporters'=transporter, 'Column Names'=col_names)
+
+write.table(OR_plot, file = "OR_sia_transporters.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+OR_data <- read.table("OR_sia_transporters.tsv", header = TRUE, sep = "\t")
+
+ggplot(OR_data, aes(x = Odds_Ratio, y = Sia_Transporter)) +
+  geom_errorbarh(aes(xmax = CI_High, xmin = CI_Low), size = 0.5, height = 0.2, color = 'gray50') +
+  geom_point(size = 3.5) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),
+        legend.position = c("top")) +  # Set legend position
+  ylab('') +
+  xlab('Odds ratio') +
+  #ggtitle('Odds Ratio for Sia Transporters') +
+  geom_text(aes(label = Odds_Ratio), nudge_y = 0.25) +  # Add odds ratio values
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red")  # Add dashed line at x = 1.0
 
 
 
