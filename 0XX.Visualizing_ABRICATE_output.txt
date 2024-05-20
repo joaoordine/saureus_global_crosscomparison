@@ -187,15 +187,25 @@ library(tidyr)
 ### Create a new data frame with ARGs grouped by Pharmacological Class
 stacked_df <- ARGs_descript_list %>% group_by(Pharmacological_Class, Identified_ARG) %>%
     summarize(Relative_Abundance = sum(Relative_Abundance))
+stacked_df <- stacked_df %>% arrange(desc(Relative_Abundance))
 
-ggplot(stacked_df, aes(x = reorder(Pharmacological_Class, - Relative_Abundance), y = Relative_Abundance, fill = Identified_ARG)) +
-    geom_bar(stat = "identity") +
-    labs(title = "Relative Abundance of ARGs by Pharmacological Class",
-         x = "Pharmacological Class",
+gene_colors <- c("#1b4f72", "#21618c", "#2874a6", "#2e86c1", "#3498db", "#5dade2", "#154360", 
+                  "#1a5276", "#1f618d", "#5499c7", "#2980b9", "#78281f", "#943126", "#b03a2e", 
+                  "#cb4335", "#e74c3c", "#512e5f", "#76448a", "#9b59b6", "#566573", "#283747", 
+                  "#6e2c00", "#7b7d7d", "#784212", "#d35400", "#58d68d", "#145a32", "#196f3d", 
+                  "#b7950b", "#d4ac0d", "#f1c40f", "#f4d03f", "#212f3d")
+
+args <- unique(stacked_df$Identified_ARG)
+colors <- gene_colors[1:length(args)]
+names(colors) <- args
+
+ggplot(stacked_df, aes(x = reorder(Pharmacological_Class, -Relative_Abundance), y = Relative_Abundance, fill = Identified_ARG)) +
+    geom_bar(stat = "identity", show.legend = TRUE) +
+    labs(x = "Pharmacological Class",
          y = "Relative Abundance (%)") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-    scale_fill_manual(values = rainbow(length(unique(stacked_df$Identified_ARG))))
-    
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, color = "black")) +
+    scale_fill_manual(values = colors)    
+
 ## Plotting relative abundances of pharmacological classes 
 ggplot(ARGs_byCLASS, aes(x = reorder(Pharmacological_Class, - Relative_Abundance), y = Relative_Abundance, fill = Pharmacological_Class)) +
     geom_bar(stat = "identity") +
