@@ -390,8 +390,16 @@ ggarrange(arabinose_boxplot, mannitol_boxplot, galactose_boxplot, lactose_boxplo
 write.table(carbs_ARGs_df, file = "carbs_ARGs_df.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 write.table(full_carbs_ARGs_df, file = "carbs_ARGs_df.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 
-## Spearman rank correlation test 
+## Spearman rank correlation test and visualization 
 cor_ARG_transporters <- cor.test(carbs_ARGs_df$Total_Transporters, carbs_ARGs_df$Total_ARGs, method = "spearman") # S = 188171246, p-value < 2.2e-16; rho 0.2710382
+
+ggplot(carbs_ARGs_df, aes(x = Total_Transporters, y = Total_ARGs, color = Category)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "auto", se = TRUE, color = "black", linetype = "solid") + # `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'
+  labs(x = "Carbohydrate Transporter copies/genome", y = "ARG copies/genome", color = "Category", 
+  subtitle = paste("Spearman's rho=", round(cor_ARG_transporters$estimate, 3),
+  "\np-value>0.001")) +
+  theme_minimal()   
 
 ## Calculate odds-ratio - method: median-unbiased estimate & mid-p exact CI  --- correct the code below 
 library(epitools)
