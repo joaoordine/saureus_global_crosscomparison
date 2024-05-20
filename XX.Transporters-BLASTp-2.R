@@ -1,5 +1,5 @@
 # Carbohydrate Transporters exploratatory analyses - processing BLASTp in R
-
+library(data.table) 
 setwd("/temporario2/11217468/projects/saureus_global/transporters_blast/blastp_output")
 getwd()
 carb_transporters_processed <- fread("carb_transporters_processed.tsv", sep = "\t")
@@ -30,14 +30,14 @@ transporters_codes <- as.data.frame(carb_transporters_codes)
 library(dplyr)
 library(stringr)
 ### Extract codes between bars "|" in Transporter_DB column
-CARB_transporters_filt$Transporter_DB <- str_extract(CARB_transporters_filt$Transporter_DB, "(?<=\\|)[^|]+(?=\\|)") 
+CARB_transp_filt$Transporter_DB <- str_extract(CARB_transp_filt$Transporter_DB, "(?<=\\|)[^|]+(?=\\|)") 
 
 ### Create a lookup table for transporter codes and their corresponding headers
 lookup_table <- transporters_codes %>%
   pivot_longer(cols = everything(), names_to = "Header", values_to = "Code")
 
 ### Merge lookup table with CARB_transporters_filt to replace codes with headers
-CARB_transporters_mapped <- CARB_transporters_filt %>%
+CARB_transporters_mapped <- CARB_transp_filt %>%
   left_join(lookup_table, by = c("Transporter_DB" = "Code"))
 
 ### Rename the new column 
@@ -108,7 +108,7 @@ names(abricate_blactams)[1] <- "Genome"
 names(abricate_blactams)[2] <- "Total_ARGs"
 
 ### Merge dfs 
-carbs_ARGs_df <- merge(abricate_blactams, genome_summary, by = "Genome", all.x = TRUE)
+carbs_ARGs_df <- merge(abricate_blactams, genome_summary, by = "Genome", all.x = FALSE)
 View(carbs_ARGs_df)
 
 ### Replace coverage values for blaZ and mec genes with hits count
