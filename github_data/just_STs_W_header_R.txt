@@ -1,5 +1,5 @@
 Count Sequence_Type
-91 Unclassified
+     91 Unclassified
 50 ST_1
 237 ST_5
 15 ST_6
