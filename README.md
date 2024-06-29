@@ -33,5 +33,6 @@ Scripts:
 - 19.Replotting_Panvita-output.R
 - 20.Plot_Roary_outputs.R
 - 21.Process_table_tree_annot.R
-  Scripts used for tree annotation in IToL are in the "itol_annotations-scripts" folder.
+
+Scripts used for tree annotation in IToL are in the "itol_annotations-scripts" folder.
 
