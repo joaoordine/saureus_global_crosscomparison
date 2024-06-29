@@ -1,4 +1,5 @@
 # Carbohydrate Transporters exploratatory analyses - processing BLASTp in R
+
 library(data.table) 
 setwd("/temporario2/11217468/projects/saureus_global/transporters_blast/blastp_output")
 getwd()
@@ -29,6 +30,7 @@ transporters_codes <- as.data.frame(carb_transporters_codes)
 
 library(dplyr)
 library(stringr)
+
 ### Extract codes between bars "|" in Transporter_DB column
 CARB_transp_filt$Transporter_DB <- str_extract(CARB_transp_filt$Transporter_DB, "(?<=\\|)[^|]+(?=\\|)") 
 
@@ -178,12 +180,25 @@ ggplot(carbs_ARGs_df, aes(x = Category, y = Total_Transporters, fill = Category)
 
 ## Combining b_lactams table with the CARB_transporters_mapped df
 full_carbs_ARGs_df <- merge(abricate_blactams, CARB_transporters_mapped, by = "Genome", all.x = TRUE)
+
+### Replace coverage values for blaZ and mec genes with hits count
+count_semicolons <- function(x) {
+  ifelse(x == 0, 0, nchar(x) - nchar(gsub(";", "", x)) + 1)
+} # Create a function to count semicolons in each element of a column
+full_carbs_ARGs_df <- full_carbs_ARGs_df %>%
+  mutate(
+    blaZ = count_semicolons(blaZ),
+    mecA = count_semicolons(mecA),
+    mecC = count_semicolons(mecC)
+  ) # Replace values in columns 3, 4, and 5 based on the condition
 View(full_carbs_ARGs_df)
 
 ## Group by Genome and Sugar, and count the occurrences
 grouped_df <- full_carbs_ARGs_df %>%
   group_by(Genome, Sugar, Category) %>%
   summarise(Transporter_Count = n())
+
+write.table(full_carbs_ARGs_df, file = "full_carbs_ARGs_df.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 
 ## Subset df and repeat this for each unique sugar transporter 
 arabinose_ARGs <- grouped_df %>% filter(Sugar == "arabinose_transporters")
@@ -390,7 +405,7 @@ ggarrange(arabinose_boxplot, mannitol_boxplot, galactose_boxplot, lactose_boxplo
 write.table(carbs_ARGs_df, file = "carbs_ARGs_df.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 write.table(full_carbs_ARGs_df, file = "carbs_ARGs_df.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 
-## Spearman rank correlation test and visualization 
+# Spearman rank correlation test and visualization 
 cor_ARG_transporters <- cor.test(carbs_ARGs_df$Total_Transporters, carbs_ARGs_df$Total_ARGs, method = "spearman") # S = 188171246, p-value < 2.2e-16; rho 0.2710382
 
 ggplot(carbs_ARGs_df, aes(x = Total_Transporters, y = Total_ARGs, color = Category)) +
@@ -401,44 +416,130 @@ ggplot(carbs_ARGs_df, aes(x = Total_Transporters, y = Total_ARGs, color = Catego
   "\np-value>0.001")) +
   theme_minimal()   
 
-## Calculate odds-ratio - method: median-unbiased estimate & mid-p exact CI  --- correct the code below 
+# Spearman rank correlation test: carbohydrate transporters x efflux ARGs
+library(tidyr)
+library(dplyr)
+
+## Create a wide-format data frame for transporters
+transporters_wide <- full_carbs_ARGs_df %>%
+  group_by(Genome, Sugar) %>%
+  summarise(Transporter_Count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = Sugar, values_from = Transporter_Count, values_fill = list(Transporter_Count = 0))
+
+## Import efflux_blactam_ARGs.tsv into R (made from ABRICATE output)
+View(efflux_blactam_ARGs)
+
+## Merge efflux_blactam_ARGs df + transporters_wide 
+cor_ARG_transp_full <- transporters_wide %>%
+  left_join(efflux_ARGsWblactam, by = "Genome")
+  
+write.table(cor_ARG_transp_full, file = "cor_ARG_transp_full.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
+
+## Create a matrix to perform Spearman's correlation test 
+arg_names <- colnames(cor_ARG_transp_full)[grepl("^(norA|lmrS|arl|mep|mgrA|qac|tet|fexA|blaZ|mec)$", colnames(cor_ARG_transp_full))]
+transporter_names <- colnames(cor_ARG_transp_full)[grepl("_transporters$", colnames(cor_ARG_transp_full))] # Extract the names of ARGs and transporters
+
+correlation_matrix <- matrix(NA, nrow = length(arg_names), ncol = length(transporter_names),
+                             dimnames = list(arg_names, transporter_names)) # Initialize an empty matrix to store the correlation coefficients
+
+## Calculate the Spearman correlation for each pair of ARG and transporter
+for (arg in arg_names) {
+  for (transporter in transporter_names) {
+    correlation_test <- cor.test(cor_ARG_transp_full[[arg]], cor_ARG_transp_full[[transporter]], method = "spearman")
+    correlation_matrix[arg, transporter] <- correlation_test$estimate
+  }
+}
+
+View(correlation_matrix)
+
+correlation_matrix[is.na(correlation_matrix)] <- 0 # replacing NAs with zeros 
+
+#correlation_matrix <- correlation_matrix[rowSums(correlation_matrix) != 0, ]
+
+write.table(correlation_matrix, file = "corrCoef_ARG_transp.tsv", sep = "\t", row.names = TRUE, col.names = TRUE)
+
+## Visualize Correlation  
+library(ggcorrplot)
+ggcorrplot(correlation_matrix, 
+           hc.order = TRUE, 
+           type = "full", 
+           lab = FALSE,
+           method = "circle", 
+           colors = c("blue", "white", "red"), 
+           ggtheme = ggplot2::theme_bw(),
+           outline.color = "white") + 
+  scale_fill_gradient2(limit = c(-0.55, 0.55), mid = "white") 
+
+## Calculate odds-ratio - method: median-unbiased estimate & mid-p exact CI 
 library(epitools)
+library(dplyr)
+
+### Split the dataframe by Sugar
+split_dfs <- split(grouped_df, grouped_df$Sugar)
+
+### Create individual dataframes for each sugar type
+for(sugar in names(split_dfs)) {
+  assign(paste0(sugar, "_df"), split_dfs[[sugar]])
+}
+
+### Calculate median Transporter_Count for each sugar type and category (MRSA and MSSA)
+median_transporters <- grouped_df %>%
+  group_by(Sugar, Category) %>%
+  summarize(Median_Transporter_Count = median(Transporter_Count, na.rm = TRUE))
+
+print(median_transporters)
+write.table(median_transporters, file = "median_transportersBYsugar_category.tsv", sep = "\t", row.names = TRUE, col.names = TRUE)
 
 ### Creating my matrix 
-copy_number <- c('Genomes Above Median', 'Genomes Below Median')
+# mannitol
+copy_number <- c('Genomes > Median', 'Genomes < Median')
 resistance <- c('MRSA', 'MSSA')
-OR_nanT <- matrix(c(594, 292, 127, 103), nrow=2, ncol=2, byrow=TRUE)
-dimnames(OR_nanT) <- list('Copy Number'=copy_number, 'Resistance Category'=resistance)
+OR_mannitol <- matrix(c(164, 421, 98, 100), nrow=2, ncol=2, byrow=TRUE)
+dimnames(OR_mannitol) <- list('Copy Number'=copy_number, 'Resistance Category'=resistance)
 
-oddsratio(OR_nanT) # odds ratio with 95% C.I. 1.649331 (1.226117 - 2.215623) / midp.exact 0.0009776512 
+OR_mannitol_out <- oddsratio(OR_mannitol) 
+OR_mannitol_out
 
-OR_kpsT <- matrix(c(363, 380, 29, 116), nrow=2, ncol=2, byrow=TRUE)
-dimnames(OR_kpsT) <- list('Copy Number'=copy_number, 'Resistance Category'=resistance)
+# ribose
+OR_ribose <- matrix(c(267, 431, 28, 127), nrow=2, ncol=2, byrow=TRUE)
+dimnames(OR_ribose) <- list('Copy Number'=copy_number, 'Resistance Category'=resistance)
 
-oddsratio(OR_kpsT) # odds ratio with 95% C.I. 3.80132 (2.499973 - 5.955532) / midp.exact 4.052003e-11
+OR_ribose_out <- oddsratio(OR_ribose) # odds ratio with 95% C.I. 3.80132 (2.499973 - 5.955532) / midp.exact 4.052003e-11
+OR_ribose_out
+
+# sialic acid 
+OR_sia <- matrix(c(334, 28, 38, 9), nrow=2, ncol=2, byrow=TRUE)
+dimnames(OR_sia) <- list('Copy Number'=copy_number, 'Resistance Category'=resistance)
+
+OR_sia_out <- oddsratio(OR_sia) # odds ratio with 95% C.I. 3.80132 (2.499973 - 5.955532) / midp.exact 4.052003e-11
+OR_sia_out
+
+# lactose 
+OR_lactose <- matrix(c(427, 317, 59, 111), nrow=2, ncol=2, byrow=TRUE)
+dimnames(OR_lactose) <- list('Copy Number'=copy_number, 'Resistance Category'=resistance)
+
+OR_lactose_out <- oddsratio(OR_lactose) # odds ratio with 95% C.I. 3.80132 (2.499973 - 5.955532) / midp.exact 4.052003e-11
+OR_lactose_out
 
 ## Forest plot - odds ratio 
-transporter <- c('kpsT', 'nanT')
-col_names <- c('Sia Transporter', 'Odds Ratio', 'CI Low', 'CI High', 'Significance')
-OR_plot <- matrix(c('kpsT', 3.80, 2.50, 5.95, 4.052003E-11, 'nanT', 1.65, 1.33, 2.21, 0.0009776512), nrow=2, ncol=5, byrow=TRUE)
+transporter <- c('Lactose', 'Mannitol', 'Ribose', 'Sialic_acid')
+col_names <- c('Transporters', 'Odds_Ratio', 'CI_Low', 'CI_High', 'midp_exact')
+OR_plot <- matrix(c('Lactose', 2.53, 1.79, 3.60, 8.947808e-08, 'Mannitol', 0.398, 0.28, 0.55, 5.911416e-08, 'Ribose', 2.80, 1.83, 4.41, 7.157708e-07, 'Sialic acid', 2.84, 1.18, 6.32, 0.0214517), nrow=4, ncol=5, byrow=TRUE)
 dimnames(OR_plot) <- list('Sia Transporters'=transporter, 'Column Names'=col_names)
 
-write.table(OR_plot, file = "OR_sia_transporters.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
+write.table(OR_plot, file = "OR_sugar_transporters.tsv", sep = "\t", row.names = FALSE, col.names = TRUE)
 
-OR_data <- read.table("OR_sia_transporters.tsv", header = TRUE, sep = "\t")
-
-ggplot(OR_data, aes(x = Odds_Ratio, y = Sia_Transporter)) +
-  geom_errorbarh(aes(xmax = CI_High, xmin = CI_Low), size = 0.5, height = 0.2, color = 'gray50') +
-  geom_point(size = 3.5) +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank(),
-        legend.position = c("top")) +  # Set legend position
-  ylab('') +
-  xlab('Odds ratio') +
-  #ggtitle('Odds Ratio for Sia Transporters') +
-  geom_text(aes(label = Odds_Ratio), nudge_y = 0.25) +  # Add odds ratio values
-  geom_vline(xintercept = 1, linetype = "dashed", color = "red")  # Add dashed line at x = 1.0
-
+ggplot(OR_plot, aes(x = Odds_Ratio, y = Transporters)) +
+    geom_errorbarh(aes(xmax = CI_High, xmin = CI_Low), size = 0.5, height = 0.2, color = 'gray50') +
+    geom_point(size = 3.5) +
+    theme_bw() +
+    theme(panel.grid.minor = element_blank(),
+          legend.position = c("top")) +  # Set legend position
+    ylab('') +
+    xlab('Odds ratio') +
+    #ggtitle('Odds Ratio for Sia Transporters') +
+    geom_text(aes(label = Odds_Ratio), nudge_y = 0.25) +  # Add odds ratio values
+    geom_vline(xintercept = 3.571429, linetype = "dashed", color = "red") 
 
 
 
