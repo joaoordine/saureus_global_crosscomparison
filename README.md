@@ -11,7 +11,7 @@ Scripts:
 - 06.Genome_annotation.sh
 - 07.Determining_Sequence_Type.sh
 - 08.Visualizing_MLST_output.R
-- 09. Group_genomes_by_ST.R
+- 09.Group_genomes_by_ST.R
 
 ## Genomic analyses of antibiotic resistance
 Scripts:
