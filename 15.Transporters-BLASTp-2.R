@@ -140,7 +140,7 @@ transp_distribution
 
 ### Scatter plot ARG x Transporters
 ggplot(carbs_ARGs_df, aes(x = Total_Transporters, y = Total_ARGs, color = Category)) +
-  geom_point() +
+  geom_point(position = "jitter") +
   labs(x = "Carbohydrate Transporter copies/genome", y = "ARG copies/genome", color = "Category") +
   theme_minimal()   
   
@@ -148,11 +148,12 @@ ggplot(carbs_ARGs_df, aes(x = Total_Transporters, y = Total_ARGs, color = Catego
 transporter_boxplot <- ggplot(carbs_ARGs_df, aes(x = Category, y = Total_Transporters, fill = Category)) +
   geom_boxplot() +
   labs(x = "Blactam Category", y = "Carbohydrate Transporter copy number") +
-  theme_minimal() 
+  theme_minimal() +
+  geom_jitter()
 transporter_boxplot
 
 arg_boxplot <- ggplot(carbs_ARGs_df, aes(x = Category, y = Total_ARGs, fill = Category)) +
-  geom_boxplot() +
+  geom_boxplot(position = "jitter") +
   labs(x = "Blactam Category", y = "ARG copy numbers") +
   theme_minimal() 
 arg_boxplot
