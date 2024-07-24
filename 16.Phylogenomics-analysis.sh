@@ -39,7 +39,10 @@ phylophlan \
     --verbose 2>&1 | tee logs/phylophlan__output_phylophlan.log
     
     
-## Reinferring ML tree from reduced alignment and computing bootstrap - improve the accuracy and phylogenetic representation of the tree - RAxML-NG v. 1.2.2
+## Reinferring ML tree from reduced alignment and computing bootstrap - improve the accuracy and phylogenetic representation of the tree - IQ-TREE multicore v2.1.4
 
+iqtree -s QC_filtered_genome_files_concatenated.aln.reduced -m TEST -nt AUTO -seed 2585 -B 1000 # Standard model selection by ModelFinderPlus followed by tree inference, automatic detection of best number of threads to be used and 1,000 Replicates for ultrafast bootstrap
+
+### Best-fit model: GTR+F+G4 chosen according to BIC (Bayesian Information Criterion) score
 
 # Tree Annotation: IToL
