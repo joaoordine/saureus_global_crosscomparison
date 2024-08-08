@@ -2,6 +2,9 @@
 We aimed to cross-compare genetic elements related to AMR and carbohydrate transport in the global S. aureus genomic population. Here, you'll find all scripts used during the development of the project and its analyses.  
 
 ## Genome selection and curation
+
+
+
 Scripts: 
 - 01.DownloadingANDprocessing_genomes.sh
 - 02.Settingup_conda_envs.sh
