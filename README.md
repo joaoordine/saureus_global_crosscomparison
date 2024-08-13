@@ -199,7 +199,8 @@ Check script 03. Group_genomes_by_ST.ipynb
 
 # Genomic analyses of antibiotic resistance
 
-## 8) SCCmec typing - in silico multiplex PCR - BLAST-detection of specific SCCmec typing primers, according to IWG-SCC - www.sccmec.org
+## 8) SCCmec typing 
+In silico multiplex PCR - BLAST-detection of specific SCCmec typing primers, according to IWG-SCC - www.sccmec.org
 ```
 vim SCCmec_primers.fasta # Create primers file 
 
