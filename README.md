@@ -40,8 +40,7 @@ cat header Saureus_complete_genomes.txt > Saureus_complete_genomesWhead.txt
 ```
 
 ### Creating a loop to read the FTP paths from the file and download all corresponding genomes 
-
-#### Moving all ftp paths to a separated file  
+Moving all ftp paths to a separated file  
 ```
 while IFS=$'\t' read -r _ _ _ _ _ _ _ _ _ ftp_path _ _ _ _ _; do      
  dir_path="${ftp_path%/*}";      
@@ -52,13 +51,13 @@ while IFS=$'\t' read -r _ _ _ _ _ _ _ _ _ ftp_path _ _ _ _ _; do
  wc -l new_modified_paths.txt # 1815
 ``` 
 
-#### Read the modified FTP paths file and download genomes
+Read the modified FTP paths file and download genomes
 ```
 while IFS= read -r ftp_path; do 
      wget "$ftp_path"; done < new_modified_paths.txt
 ``` 
 
-#### Extract gzip files and move them to another directory 
+Extract gzip files and move them to another directory 
 ```
 mkdir genome_files 
  for file in ./*_genomic.fna.gz; do 
@@ -67,14 +66,13 @@ mkdir genome_files
      mv "$filename" genome_files/; done
 ``` 
 
-#### Checking how many files were downloaded and moved to genome_files
+Checking how many files were downloaded and moved to genome_files
 ``` 
 ls | grep -c GCA # 1813
 ``` 
 
 ### Setting up my conda environments
-
-#### Initiating miniconda 
+Initiating miniconda 
 ```
 export PATH="/temporario/11217468/miniconda3/bin:$PATH" 
  conda init bash 
@@ -82,7 +80,7 @@ export PATH="/temporario/11217468/miniconda3/bin:$PATH"
  conda activate bioinfo
 ``` 
 
-#### Downloading required packages available through bioconda (all have python version 3.8)
+Downloading required packages available through bioconda (all have python version 3.8)
 ```
 conda install bioconda::blast 
  conda install bioconda::prokka 
@@ -90,7 +88,7 @@ conda install bioconda::blast
  conda deactivate
 ``` 
 
-#### Creating separated environments for specific packages I know will conflict with those aforementioned
+Creating separated environments for specific packages I know will conflict with those aforementioned
 ```
 conda create --name checkm
 conda activate checkm
@@ -98,7 +96,8 @@ conda install -c bioconda checkm-genome
 conda deactivate
 ``` 
 
-## 2) Quality control of downloaded genomes -checkM v1.2.2
+## 2) Quality control of downloaded genomes
+checkM v1.2.2
 ``` 
 source </temporario2/11217468/miniconda3/bin/activate checkm> # replace path accordingly
 checkm lineage_wf genome_files checkm_output -t 5
@@ -111,7 +110,7 @@ awk -F' ' '/^GCA_/ { print $1, $6, $8 }' genome_quality.txt > genome_quality_fil
 echo "Genome_ID Completeness Contamination" > genome_quality_filt_Whead.txt # creating a file with the headers
 cat genome_quality_filtered.txt >>  genome_quality_filt_Whead.txt
 ``` 
-* more easily visualized in the end of the slurm output file (slurm-JOBID) or also in the 'bin_stats_ext.tsv' (contains along with completeness and contamination parameters, other metrics related to the quality of the assembled genome, such as N50, mean contig, etc)
+*More easily visualized in the end of the slurm output file (slurm-JOBID) or also in the 'bin_stats_ext.tsv' (contains along with completeness and contamination parameters, other metrics related to the quality of the assembled genome, such as N50, mean contig, etc)
 
 
 ## 3) Selecting high-quality genomes
@@ -133,7 +132,7 @@ while read -r genome completeness contamination; do
 done < "fna_quality_filtered_genomes.txt" # Loop through each line in the quality filtered genomes file
 ```
 
-### Count how many high quality genomes there are
+### Count how many high-quality genomes there are
 ```
 cd QC_filtered_genome_files
 ls | grep -c GCA_
@@ -182,7 +181,7 @@ awk -F'\t' '/temporario/ { print $1, $4, $5, $6, $7, $8, $9, $10 }' mlst_results
 sed -i 's|.*/\([^/]*\)_genomic\.fna|\1|' genome_allele_ST.txt
 ```
 
-####  Frequency table/plot of each ST identified
+Frequency table/plot of each ST identified
 ```
 sort -k2n genome_STs.txt -o genome_STs_sorted.txt
 awk '{print $2}' genome_STs_sorted.txt | uniq -c > just_STs.txt
@@ -400,8 +399,10 @@ done
     awk -v genome_code="$genome_code" -F'\t' 'BEGIN {OFS="\t"} {print $0, genome_code}' "$file" > "$out_file" # Append file name as a new column to each row
 done
 ``` 
+
 ### Concatenate files
-``` cat *_filt.tsv > carb_transporters_concat.tsv
+```
+cat *_filt.tsv > carb_transporters_concat.tsv
 ```
 
 ### Make a header and append it to the concatenated file
@@ -539,7 +540,8 @@ roary -e -n -v -f roary_output -p 5 "$input_dir"/*.gff
 python roary_plots.py core_gene_alignment.nwk gene_presence_absence.csv
 ```
 
-## Analyzing specific genes annotated in the pangenome - check Pangenome sequence analysis in https://github.com/microgenomics/tutorials/blob/master/pangenome.md
+## Analyzing specific genes annotated in the pangenome 
+Check Pangenome sequence analysis in https://github.com/microgenomics/tutorials/blob/master/pangenome.md
 
 ## 19) Replotting PanViTa output 
 Check script 07.Replotting_Panvita-output.ipynb
