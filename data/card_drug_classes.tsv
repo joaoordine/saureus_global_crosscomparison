@@ -1,0 +1,26 @@
+Pharmacological.Class	Core	Accessory	Exclusive
+Lincosamide	0	11	3
+Macrolide	0	7	2
+Streptogramin	0	10	3
+Aminoglycoside	1	6	0
+Fluoroquinolone	4	3	0
+MDR	5	3	0
+Tetracycline	3	6	1
+Carbapenem	0	4	0
+Penam	1	4	0
+Penem	0	4	0
+Peptide	1	1	1
+Cephamycin	0	4	0
+Monobactam	0	4	0
+Cephalosporin	1	4	0
+Phosphonic acid	0	2	1
+Glycylcycline	2	0	0
+Phenicol	0	4	3
+Diaminopyrimidine	0	3	0
+Glycopeptide	0	1	0
+Nucleoside	0	1	0
+Pleuromutilin	0	4	2
+Streptogramin a	0	7	1
+Streptogramin b	0	6	1
+Oxazolidinone	0	2	2
+Fusidane	0	2	0

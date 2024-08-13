@@ -1,0 +1,67 @@
+Identified_ARG	Count	Relative_Abundance	Pharmacological_Class	Resistance.Mechanism
+AAC6_Ie_APH2_Ia	262	1.201	aminoglycoside	antibiotic inactivation
+ANT4_Ib	265	1.215	aminoglycoside	antibiotic inactivation
+ANT6_Ia	24	0.11	aminoglycoside	antibiotic inactivation
+APH3_IIIa	421	1.93	aminoglycoside	antibiotic inactivation
+Efae_ACT_CHL	4	0.018	phenicol	antibiotic inactivation
+Efac_ACT_CHL	10	0.046	phenicol	antibiotic inactivation
+ErmA	734	3.364	MDR	target alteration
+ErmB	70	0.321	MDR	target alteration
+ErmC	81	0.371	MDR	target alteration
+ErmT	11	0.05	MDR	target alteration
+FosB4	1	0.005	fosfomycin	antibiotic inactivation
+FosD	7	0.032	fosfomycin	antibiotic inactivation
+Lreu_cat_TC	6	0.027	phenicol	antibiotic inactivation
+blaZ	1328	6.086	penam	antibiotic inactivation
+SAT_4	358	1.641	nucleoside	antibiotic inactivation
+Sau_FosB	1233	5.651	fosfomycin	antibiotic inactivation
+Sau_norA	1715	7.86	fluoroquinolone	efflux
+Sint_ACT_CHL	13	0.06	phenicol	antibiotic inactivation
+Sau_LmrS	1714	7.856	MDR	efflux
+aad6	71	0.325	aminoglycoside	antibiotic inactivation
+apmA	2	0.009	aminoglycoside	antibiotic inactivation
+arlR	1715	7.86	fluoroquinolone	efflux
+arlS	1715	7.86	fluoroquinolone	efflux
+catA8	1	0.005	phenicol	antibiotic inactivation
+cfrB	1	0.005	MDR	target alteration
+cfrA	17	0.078	MDR	target alteration
+dfrC	48	0.22	diaminopyrimidine	target alteration
+dfrG	179	0.82	diaminopyrimidine	target alteration
+dfrK	11	0.05	diaminopyrimidine	target alteration
+fexA	42	0.192	phenicol	efflux
+fusB	7	0.032	fusidane	target protection
+fusC	32	0.147	fusidane	target protection
+lnuA	19	0.087	lincosamide	antibiotic inactivation
+lnuG	2	0.009	lincosamide	antibiotic inactivation
+lsaB	3	0.014	MDR	target protection
+lsaC	1	0.005	MDR	target protection
+lsaE	28	0.128	MDR	target protection
+mecA	917	4.203	penam	target alteration
+mecC	4	0.018	penam	target alteration
+mecI	273	1.251	penam	target alteration
+mecR1	273	1.251	penam	target alteration
+mepA	1714	7.856	MDR	efflux
+mepR	1715	7.86	MDR	efflux
+mgrA	1714	7.856	MDR	efflux
+mphC	337	1.545	macrolide	antibiotic inactivation
+msrA	343	1.572	MDR	target protection
+mupA	113	0.518	mupirocin-like	target alteration
+optrA	2	0.009	MDR	target protection
+poxtA	1	0.005	MDR	target protection
+qacA	78	0.357	fluoroquinolone	efflux
+qacB	6	0.027	fluoroquinolone	efflux
+tet38	1713	7.851	tetracycline	efflux
+tetK	146	0.669	tetracycline	efflux
+tetL	31	0.142	tetracycline	efflux
+tetM	162	0.742	tetracycline	target protection
+tetS	13	0.06	tetracycline	target protection
+tetU	11	0.05	MDR	efflux
+vanA	12	0.055	glycopeptide	target alteration
+vanHA	12	0.055	glycopeptide	target alteration
+vanRA	12	0.055	glycopeptide	target alteration
+vanSA	12	0.055	glycopeptide	target alteration
+vanXA	12	0.055	glycopeptide	target alteration
+vanYA	12	0.055	glycopeptide	target alteration
+vanZA	12	0.055	glycopeptide	target alteration
+vgaALC	8	0.037	MDR	target protection
+vgaE	10	0.046	MDR	target protection
