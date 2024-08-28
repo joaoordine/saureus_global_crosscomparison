@@ -1,4 +1,4 @@
-# Global cross-genome comparison of carbohydrate transporters in Staphylococcus aureus with distinct antimicrobial susceptibility profiles
+# Global cross-genome comparison of carbohydrate transporters in *Staphylococcus aureus* with distinct antimicrobial susceptibility profiles
 We aimed to cross-compare genetic elements related to AMR and carbohydrate transport in the global S. aureus genomic population. Here, you'll find all scripts used during the development of the project and its analyses. 
 Manuscript pre-print: (replace later with article doi) 
 
