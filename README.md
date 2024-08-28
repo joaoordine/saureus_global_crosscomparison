@@ -23,7 +23,7 @@ grep -c 'Scafold' complete_genomes.txt # 0
 grep -c 'Contig' complete_genomes.txt # 0
 ```
 
-### Selecting only S. aureus genomes
+### Selecting only *S. aureus* genomes
 ```
 grep -c 'Staphylococcus aureus' complete_genomes.txt ### checking how many S. aureus genomes there are on the file -> # 1815  
 grep 'Staphylococcus aureus' ./complete_genomes.txt >> ./Saureus_complete_genomes.txt  
