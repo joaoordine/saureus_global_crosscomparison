@@ -1,6 +1,6 @@
 # Global cross-genome comparison of carbohydrate transporters in *Staphylococcus aureus* with distinct antimicrobial susceptibility profiles
 We aimed to cross-compare genetic elements related to AMR and carbohydrate transport in the global S. aureus genomic population. Here, you'll find all scripts used during the development of the project and its analyses. 
-Manuscript pre-print: (replace later with article doi) 
+- Manuscript pre-print: (replace later with article doi) 
 
 # Genome selection and curation
 
@@ -74,18 +74,18 @@ ls | grep -c GCA # 1813
 ### Setting up my conda environments
 Initiating miniconda 
 ```
-export PATH="/temporario/11217468/miniconda3/bin:$PATH" 
- conda init bash 
- conda create --name bioinfo 
- conda activate bioinfo
+export PATH="<YOUR_PATH_TO>/miniconda3/bin:$PATH" 
+conda init bash 
+conda create --name bioinfo 
+conda activate bioinfo
 ``` 
 
 Downloading required packages available through bioconda (all have python version 3.8)
 ```
 conda install bioconda::blast 
- conda install bioconda::prokka 
- conda install bioconda::mlst 
- conda deactivate
+conda install bioconda::prokka 
+conda install bioconda::mlst 
+conda deactivate
 ``` 
 
 Creating separated environments for specific packages I know will conflict with those aforementioned
@@ -99,7 +99,7 @@ conda deactivate
 ## 2) Quality control of downloaded genomes
 checkM v1.2.2
 ``` 
-source </temporario2/11217468/miniconda3/bin/activate checkm> # replace path accordingly
+source <YOUR_PATH_TO>/miniconda3/bin/activate checkm 
 checkm lineage_wf genome_files checkm_output -t 5
 ``` 
 
@@ -143,7 +143,7 @@ Check script 01.Plot_QC_checkM.ipynb
 
 ## 5) Genome annotation - Prokka v1.13
 ```
-for genome_file in /temporario2/11217468/projects/saureus_global/QC_filtered_genome_files/*.fna; do # Iterate over each genome file in the directory
+for genome_file in <YOUR_PATH_TO>/QC_filtered_genome_files/*.fna; do # Iterate over each genome file in the directory
     genome_name=$(basename "$genome_file" .fna)     # Get the genome name from the file name
 
     index=1 # Initialize an index to make the output directory name unique
@@ -164,8 +164,8 @@ done
 ```
 mlst --list | grep saureus # Getting S. aureus pubMLST scheme 
 
-for file in /temporario2/11217468/projects/saureus_global/QC_filtered_genome_files/*.fna; do
-    mlst --scheme saureus "$file" >> /temporario2/11217468/projects/saureus_global/mlst_results.txt
+for file in <YOUR_PATH_TO>/QC_filtered_genome_files/*.fna; do
+    mlst --scheme saureus "$file" >> <YOUR_PATH_TO>/mlst_results.txt #the full path should be specified
 done
 ```
 
@@ -204,32 +204,32 @@ In silico multiplex PCR - BLAST-detection of specific SCCmec typing primers, acc
 ```
 vim SCCmec_primers.fasta # Create primers file 
 
-genome_dir="/temporario2/11217468/projects/saureus_global/QC_filtered_genome_files" # Set the directory containing genome files
+genome_dir="<YOUR_PATH_TO>/QC_filtered_genome_files" # Set the directory containing genome files
 
-makeblastdb -in /temporario2/11217468/projects/saureus_global/sccmec/SCCmec_primers.fasta -dbtype nucl -out db/SCCmecprimer_db # Create a BLAST database
+makeblastdb -in <YOUR_PATH_TO>/SCCmec_primers.fasta -dbtype nucl -out db/SCCmecprimer_db # Create a BLAST database
 
-SCCmecprimer_db="/temporario2/11217468/projects/saureus_global/sccmec/db/SCCmecprimer_db" # Set the directory containing the primer database
+SCCmecprimer_db="<YOUR_PATH_TO>/db/SCCmecprimer_db" # Set the directory containing the primer database
 
 mkdir BLASTn_output # to store the results 
 for genome_file in "${genome_dir}"/*.fna; do
     genome_name=$(basename "$genome_file" _genomic.fna)
-    output_file="/temporario2/11217468/projects/saureus_global/sccmec/BLASTn_output/${genome_name}_primer_hits.txt"
+    output_file="<YOUR_PATH_TO>/BLASTn_output/${genome_name}_primer_hits.txt"
     blastn -query "$genome_file" -db "$SCCmecprimer_db" -word_size 18 -out "$output_file" -outfmt "6 qseqid sseqid qstart qend length pident evalue bitscore"
 done
 ```
 
 ### Checking how many empty files I have
 ```
-find /temporario2/11217468/projects/saureus_global/sccmec/BLASTn_output/ -type f -empty | wc -l # 783
+find <YOUR_PATH_TO>/BLASTn_output/ -type f -empty | wc -l # 783
 ```
 
 ## 9) Processing output 
 Make tabular (True/False) summary of BLASTn output files all genomes
 
 ```
-echo -e "Sample\tTYPE_I\tTYPE_II\tTYPE_III\tTYPE_IVa\tTYPE_IVb\tTYPE_IVc\tTYPE_IVd\tTYPE_IVe\tTYPE_V\tccr4\tmecA147" > //temporario2/11217468/projects/saureus_global/sccmec//summary_SCCmectable.txt # Create the header 
+echo -e "Sample\tTYPE_I\tTYPE_II\tTYPE_III\tTYPE_IVa\tTYPE_IVb\tTYPE_IVc\tTYPE_IVd\tTYPE_IVe\tTYPE_V\tccr4\tmecA147" > //<YOUR_PATH_TO>//summary_SCCmectable.txt # Create the header 
 
-for blastn_result in /temporario2/11217468/projects/saureus_global/sccmec/BLASTn_output/*.txt; do
+for blastn_result in <YOUR_PATH_TO>/BLASTn_output/*.txt; do
     ## Extract the sample name from the filename
     sample=$(basename "$blastn_result" | sed 's/_primer_hits\.txt//')
 
@@ -292,7 +292,7 @@ for blastn_result in /temporario2/11217468/projects/saureus_global/sccmec/BLASTn
     fi
 
     ### Output the tabular summary for this sample
-    echo -e "$sample\t$TYPE_I\t$TYPE_II\t$TYPE_III\t$TYPE_IVa\t$TYPE_IVb\t$TYPE_IVc\t$TYPE_IVd\t$TYPE_IVe\t$TYPE_V\t$ccr4\t$mecA147" >> /temporario2/11217468/projects/saureus_global/sccmec/summary_SCCmectable.txt
+    echo -e "$sample\t$TYPE_I\t$TYPE_II\t$TYPE_III\t$TYPE_IVa\t$TYPE_IVb\t$TYPE_IVc\t$TYPE_IVd\t$TYPE_IVe\t$TYPE_V\t$ccr4\t$mecA147" >> <YOUR_PATH_TO>/summary_SCCmectable.txt
 done
 
 sed 's/\t/,/g' summary_SCCmectable.txt > summary_SCCmectable.csv # to make it more easily to import in R/excel 
@@ -308,12 +308,12 @@ mkdir abricate_output
 
 ### Specify the directory containing your genome files
 ```
-genome_directory="/temporario2/11217468/projects/saureus_global/QC_filtered_genome_files"
+genome_directory="<YOUR_PATH_TO>/QC_filtered_genome_files"
 ```
 
 ### Get the genome name from the file name and Run ABRICATE on the genome file
 ```
-output_directory="/temporario2/11217468/projects/saureus_global/abricate_output"
+output_directory="<YOUR_PATH_TO>/abricate_output"
 ```
 
 ### Retrieving ARGs aligning against CARD database
@@ -368,7 +368,7 @@ mv sugarT_db* db_sugarT/
 
 ### Specifying the path to genomes database
 ```
-export BLASTDB="/temporario2/11217468/projects/saureus_global/transporters_blast/db_sugarT"
+export BLASTDB="<YOUR_PATH_TO>/db_sugarT"
 ```
 
 ### Running blastn on multiple queries
@@ -377,16 +377,18 @@ mkdir -p blastp_output
 ```
 
 ### Setting up the path to our protein sequences and to our genomic database
-``` genome_dir="/temporario2/11217468/projects/saureus_global/transporters_blast/all_faa_files"
-transporter_db="/temporario2/11217468/projects/saureus_global/transporters_blast/db_sugarT/sugarT_db"
+```
+genome_dir="<YOUR_PATH_TO>/all_faa_files"
+transporter_db="<YOUR_PATH_TO>/db_sugarT/sugarT_db"
 ```
 
-``` cd "$genome_dir"
+```
+cd "$genome_dir"
 
 for genome_file in "${genome_dir}"/*.faa; do
 genome_name=$(basename "$genome_file" _genomic.faa)
 genome_no_ext="${genome_name%_genomic.faa}" # Remove the file extension
-output_file="/temporario2/11217468/projects/saureus_global/transporters_blast/blastp_output/${genome_no_ext}_hits.tsv"
+output_file="<YOUR_PATH_TO>/blastp_output/${genome_no_ext}_hits.tsv"
 blastp -query "$genome_file" -db "$transporter_db" -out "$output_file" -evalue 0.01 -num_threads 10 -outfmt "6 qseqid sseqid sstart send length pident evalue bitscore sseq"
 done
 ```
@@ -394,7 +396,8 @@ done
 ## 13) Processing BLASTp outputs
 
 ### Adding the genome code as last column for each rowbox
-``` for file in *_hits.tsv; do
+```
+for file in *_hits.tsv; do
     genome_code="${file%%_hits.tsv}" # Extract genome code from the file name
     out_file="${file%%_hits.tsv}_filt.tsv"   
     awk -v genome_code="$genome_code" -F'\t' 'BEGIN {OFS="\t"} {print $0, genome_code}' "$file" > "$out_file" # Append file name as a new column to each row
@@ -494,12 +497,12 @@ python3 panvita.py -h
 cd prokka_output
 mkdir all_gbk_files
 for dir in GCA_*; do
-    scp /temporario2/11217468/projects/saureus_global/prokka_output/"$dir"/*.gbk all_gbk_files && 
+    scp <YOUR_PATH_TO>/prokka_output/"$dir"/*.gbk all_gbk_files && 
     echo "Copy of $dir was sent"
 done 
 ```
 
-### If any dependencie isn't installed automatically, run the following
+### If any dependencies aren't installed automatically, run the following
 ```
 ####conda install -c anaconda wget
 ####conda install seaborn
@@ -510,7 +513,7 @@ done
 
 ### Run the tool 
 ```
-input_dir="/temporario2/11217468/projects/saureus_global/prokka_output/all_gbk_files"
+input_dir="<YOUR_PATH_TO>/prokka_output/all_gbk_files"
 
 python3 panvita.py -card -vfdb -bacmet -i 80 -c 80 "$input_dir"/*.gbk 
 ```
@@ -524,7 +527,7 @@ conda install bioconda::roary
 ```
 mkdir all_gff_files
 for dir in GCA_*; do
-    scp /temporario2/11217468/projects/saureus_global/prokka_output/"$dir"/*.gff all_gff_files && 
+    scp <YOUR_PATH_TO>/prokka_output/"$dir"/*.gff all_gff_files && 
     echo "Copy of $dir was sent"
 done 
 ```
@@ -532,7 +535,7 @@ done
 ### Inferring the pangenome
 ```
 mkdir roary_output  
-input_dir="/temporario2/11217468/projects/saureus_global/prokka_output/all_gff_files"
+input_dir="<YOUR_PATH_TO>/prokka_output/all_gff_files"
 roary -e -n -v -f roary_output -p 5 "$input_dir"/*.gff 
 ```
 
