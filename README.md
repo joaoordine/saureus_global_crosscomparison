@@ -18,7 +18,7 @@ cut -f1,2,3,6,7,8,9,11,12,20,26,27,28,35,36 assembly_summary.txt > filtered_geno
 head ./filtered_genomes.txt 
 grep -c 'Complete' filtered_genomes.txt # 49196 complete bacterial genomes  
 grep 'Complete' ./filtered_genomes.txt >> ./complete_genomes.txt    
-grep -c 'Complete' complete_genomes.txt # 49196  
+grep -c 'Complete' complete_genomes.txt # 49196 - obtained in March 2024 
 grep -c 'Scafold' complete_genomes.txt # 0  
 grep -c 'Contig' complete_genomes.txt # 0
 ```
@@ -68,6 +68,7 @@ mkdir genome_files
 
 Checking how many files were downloaded and moved to genome_files
 ``` 
+cd genome_files
 ls | grep -c GCA # 1813
 ``` 
 
@@ -84,7 +85,8 @@ Downloading required packages available through bioconda (all have python versio
 ```
 conda install bioconda::blast 
 conda install bioconda::prokka 
-conda install bioconda::mlst 
+conda install bioconda::mlst
+conda install bioconda::abricate
 conda deactivate
 ``` 
 
@@ -93,7 +95,6 @@ Creating separated environments for specific packages I know will conflict with 
 conda create --name checkm
 conda activate checkm
 conda install -c bioconda checkm-genome
-conda deactivate
 ``` 
 
 ## 2) Quality control of downloaded genomes
@@ -122,9 +123,9 @@ awk '{print $1".fna", $2, $3}' genome_quality_filt_Whead.txt > fna_quality_filte
 ```
 completeness_cutoff=97
 contamination_cutoff=3
-
-while read -r genome completeness contamination; do
-    # Check if completeness is greater than 97 and contamination is less than 3
+# Begins the loop, reading each line from the file and assigning the values in each line to these 3 variables; -r flag prevents backslashes from being interpreted as escape characters
+while read -r genome completeness contamination; do  
+    # Check if completeness is greater than 97 and contamination is less than 3; bc -l allows for comparisons involving decimal numbers
     if (( $(echo "$completeness > $completeness_cutoff" | bc -l) )) && (( $(echo "$contamination < $contamination_cutoff" | bc -l) )); then
         mv "genome_files/$genome" "QC_filtered_genome_files" # Copy the genome file from genome_files to the new directory
         echo "Copied $genome to QC_filtered_genome_files"
@@ -141,7 +142,8 @@ ls | grep -c GCA_
 ## 4) QC plot
 Check script 01.Plot_QC_checkM.ipynb
 
-## 5) Genome annotation - Prokka v1.13
+## 5) Genome annotation 
+Only high-quality genomes were annotated with Prokka v1.13
 ```
 for genome_file in <YOUR_PATH_TO>/QC_filtered_genome_files/*.fna; do # Iterate over each genome file in the directory
     genome_name=$(basename "$genome_file" .fna)     # Get the genome name from the file name
@@ -156,12 +158,14 @@ for genome_file in <YOUR_PATH_TO>/QC_filtered_genome_files/*.fna; do # Iterate o
     done
 
     prokka --outdir prokka_output/"$output_dir" --prefix "$genome_name" "$genome_file" --cpus 0 && echo "Annotated $genome_name"
+# cpus 0: to automatically detect the best CPU number to be used
 done
 ```
 
 ## 6) Multi-locus sequence typing - mlst v2.16.1
  
 ```
+conda activate bioinfo
 mlst --list | grep saureus # Getting S. aureus pubMLST scheme 
 
 for file in <YOUR_PATH_TO>/QC_filtered_genome_files/*.fna; do
@@ -185,7 +189,7 @@ Frequency table/plot of each ST identified
 ```
 sort -k2n genome_STs.txt -o genome_STs_sorted.txt
 awk '{print $2}' genome_STs_sorted.txt | uniq -c > just_STs.txt
-vim header # Count Sequence_Type
+vim header.txt # Create a header file and write "Count Sequence_Type" separated by space or tab. Save it
 cat header.txt just_STs.txt > just_STs_W_header.txt
 sed -i 's/-/Unclassified/g' just_STs_W_header.txt # replacing '-' character for something else so there's isn't any problems importing the dataset into R
 awk 'NR <= 2 {print; next} {print $1, "ST_"$2}' just_STs_W_header.txt > just_STs_W_header_R.txt # skip the first two rows, print them as they are, and for the rest of the rows, it will add 'ST_' in front of the numbers in the second column
@@ -303,6 +307,7 @@ Check script 04.Visualizing_SCCmec_groups.R
 
 ## 10) ABRICATE analysis 
 ```
+conda activate bioinfo
 mkdir abricate_output
 ```
 
@@ -311,7 +316,7 @@ mkdir abricate_output
 genome_directory="<YOUR_PATH_TO>/QC_filtered_genome_files"
 ```
 
-### Get the genome name from the file name and Run ABRICATE on the genome file
+### Specify where to store ABRICATE output
 ```
 output_directory="<YOUR_PATH_TO>/abricate_output"
 ```
@@ -319,7 +324,7 @@ output_directory="<YOUR_PATH_TO>/abricate_output"
 ### Retrieving ARGs aligning against CARD database
 ```
 for genome_file in "$genome_directory"/*.fna; do
-    genome_name=$(basename "$genome_file" .fna)
+    genome_name=$(basename "$genome_file" .fna) # Get the genome name from the file name and Run ABRICATE on this genome file
     abricate --db card "$genome_file" > "$output_directory/$genome_name-ARGs.txt"
     && echo "Analyzed $genome_name"
 done
@@ -497,18 +502,18 @@ python3 panvita.py -h
 cd prokka_output
 mkdir all_gbk_files
 for dir in GCA_*; do
-    scp <YOUR_PATH_TO>/prokka_output/"$dir"/*.gbk all_gbk_files && 
+    cp <YOUR_PATH_TO>/prokka_output/"$dir"/*.gbk all_gbk_files && 
     echo "Copy of $dir was sent"
 done 
 ```
 
 ### If any dependencies aren't installed automatically, run the following
 ```
-####conda install -c anaconda wget
-####conda install seaborn
-####conda install pandas
-####conda install -c conda-forge matplotlib
-####conda install -c anaconda basemap
+conda install -c anaconda wget
+conda install seaborn
+conda install pandas
+conda install -c conda-forge matplotlib
+conda install -c anaconda basemap
 ```
 
 ### Run the tool 
