@@ -561,6 +561,7 @@ Check script 08.Plot_roary_output.ipynb
 ## 21) Process tables to annotate phylogenomic tree
 Check script 10.Process_table_tree_annot.ipynb
 
+If you can't find a specific file to reproduce the analysis, you'll likely find it here: https://drive.google.com/drive/folders/1vSS9ROQiYeQerXAVmnQGGH5G5ryHtcCs. If the file you're looking for isn't here, please contact me and let me know. 
 
 
 
