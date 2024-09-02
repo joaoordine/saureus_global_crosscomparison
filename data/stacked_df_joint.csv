@@ -1,0 +1,34 @@
+Pharmacological_Class,Identified_ARG,Relative_Abundance
+fluoroquinolone,arl,15.72
+MDR,mep,15.716
+tetracycline,tet,9.464
+fluoroquinolone,norA,7.86
+MDR,lmrS,7.856
+MDR,mgrA,7.856
+penam,mec,6.723
+penam,blaZ,6.086
+fosfomycin,fos,5.688
+MDR,erm,4.107
+diaminopyrimidine,aph,3.13
+nucleoside,SAT_4,1.641
+MDR,msrA,1.572
+macrolide,mphC,1.545
+diaminopyrimidine,ant,1.325
+diaminopyrimidine,dfr,1.091
+mupirocin-like ,mupA,0.518
+glycopeptide,van,0.385
+fluoroquinolone,qac,0.384
+diaminopyrimidine,aad6,0.325
+phenicol,fexA,0.192
+fusidane ,fus,0.179
+MDR,lsaE,0.128
+phenicol,ACT_CHL,0.124
+lincosamide,lnu,0.096
+MDR,vga,0.082
+MDR,cfrA,0.078
+MDR,tetU,0.05
+diaminopyrimidine,apmA,0.009
+phenicol,optrA,0.009
+MDR,cfr,0.005
+MDR,poxtA,0.005
+phenicol,catA8,0.005
